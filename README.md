@@ -1,1 +1,1 @@
-# vimyl-catalogue
+# vinyl-catalogue
