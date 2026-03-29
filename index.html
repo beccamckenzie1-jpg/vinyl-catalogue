@@ -54,12 +54,10 @@
   .submit-btn:hover { background: #1a1208; }
   #scanner-wrap { position: relative; background: #000; border-radius: 8px; overflow: hidden; width: 100%; aspect-ratio: 4/3; margin-bottom: 1rem; }
   #scanner-video { width: 100%; height: 100%; object-fit: cover; display: block; }
-  #scanner-canvas { display: none; }
   .scanner-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 72%; height: 28%; border: 2px solid rgba(255,255,255,0.7); border-radius: 4px; box-shadow: 0 0 0 1000px rgba(0,0,0,0.5); pointer-events: none; }
   .scanner-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--label-red); animation: scan 2s ease-in-out infinite; }
   @keyframes scan { 0%,100%{top:8%} 50%{top:88%} }
   .scanner-status { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 0.75rem; min-height: 20px; }
-  #photo-input { display: none; }
   .record-item { display: flex; align-items: flex-start; gap: 1rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); transition: background 0.1s; }
   .record-item:last-child { border-bottom: none; }
   .record-item:hover { background: #faf8f3; }
@@ -91,7 +89,6 @@
   .hidden { display: none !important; }
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(26,18,8,0.1); border-top-color: var(--ink); border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .ai-note { font-size: 11px; color: var(--muted); text-align: center; margin-top: 0.5rem; font-style: italic; }
   .loading-screen { padding: 3rem 1.5rem; text-align: center; color: var(--muted); font-size: 13px; }
 </style>
 </head>
@@ -122,15 +119,10 @@
     <button class="btn" onclick="app.togglePanel('barcode-panel')">
       <span class="btn-icon">📷</span><span class="btn-label">Scan barcode</span>
     </button>
-    <button class="btn" onclick="app.triggerPhoto()">
-      <span class="btn-icon">🖼️</span><span class="btn-label">Photo sleeve</span>
-    </button>
     <button class="btn primary" onclick="app.togglePanel('manual-panel')">
       <span class="btn-icon">✏️</span><span class="btn-label">Add manually</span>
     </button>
   </div>
-
-  <input type="file" id="photo-input" accept="image/*" capture="environment" onchange="app.handlePhoto(event)">
 
   <div class="panel hidden" id="barcode-panel">
     <div class="panel-header">Barcode scanner <button class="close-btn" onclick="app.closePanel('barcode-panel')">×</button></div>
@@ -138,7 +130,6 @@
       <div id="scanner-status" class="scanner-status">Initialising camera…</div>
       <div id="scanner-wrap">
         <video id="scanner-video" autoplay playsinline muted></video>
-        <canvas id="scanner-canvas"></canvas>
         <div class="scanner-overlay"><div class="scanner-line"></div></div>
       </div>
       <div id="barcode-result" class="hidden"></div>
@@ -165,11 +156,6 @@
     </div>
   </div>
 
-  <div class="panel hidden" id="photo-panel">
-    <div class="panel-header">Reading sleeve… <button class="close-btn" onclick="app.closePanel('photo-panel')">×</button></div>
-    <div class="panel-body" id="photo-panel-body"></div>
-  </div>
-
   <div id="status-area"></div>
 
   <div>
@@ -185,369 +171,288 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWakCy6WRWol9XiwxOe8aEAM_8LoaSxjIGa01upau9alkT2kAE-MPWPhfAHEFKttqf/exec';
 
-const zxingScript = document.createElement('script');
-zxingScript.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js';
-zxingScript.onload = bootApp;
-document.head.appendChild(zxingScript);
+var records     = [];
+var barcodeData = null;
+var codeReader  = null;
+var scanning    = false;
 
-function bootApp() {
-  var records     = [];
-  var barcodeData = null;
-  var zxingReader = null;
-  var scanActive  = false;
+function setSyncStatus(state, msg) {
+  document.getElementById('sync-dot').className = 'sync-dot' + (state ? ' ' + state : '');
+  document.getElementById('sync-label').textContent = msg;
+}
 
-  function setSyncStatus(state, msg) {
-    document.getElementById('sync-dot').className = 'sync-dot' + (state ? ' ' + state : '');
-    document.getElementById('sync-label').textContent = msg;
-  }
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-  function esc(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+function showStatus(msg, type) {
+  var el = document.getElementById('status-area');
+  el.innerHTML = '<div class="status-msg ' + (type||'info') + '">' + esc(msg) + '</div>';
+  setTimeout(function(){ el.innerHTML=''; }, 3500);
+}
 
-  function showStatus(msg, type) {
-    var el = document.getElementById('status-area');
-    el.innerHTML = '<div class="status-msg ' + (type||'info') + '">' + esc(msg) + '</div>';
-    setTimeout(function(){ el.innerHTML=''; }, 3500);
-  }
+async function scriptCall(params) {
+  var qs = Object.keys(params).map(function(k){
+    return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+  }).join('&');
+  var res = await fetch(SCRIPT_URL + (qs ? '?' + qs : ''));
+  if (!res.ok) throw new Error('Request failed (' + res.status + ')');
+  var data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
 
-  // ── All calls via GET with URL params ───────────────────────
-
-  async function scriptCall(params) {
-    var qs = Object.keys(params).map(function(k){
-      return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
-    }).join('&');
-    var url = SCRIPT_URL + (qs ? '?' + qs : '');
-    var res = await fetch(url);
-    if (!res.ok) throw new Error('Request failed (' + res.status + ')');
-    var data = await res.json();
-    if (data.error) throw new Error(data.error);
-    return data;
-  }
-
-  // ── Init ────────────────────────────────────────────────────
-
-  async function init() {
-    setSyncStatus('busy', 'Connecting to Google Sheets…');
-    try {
-      var data = await scriptCall({});
-      var rows = data.values || [];
-      var hasHeader = rows.length > 0 && rows[0][0] && rows[0][0].toLowerCase() === 'artist';
-      var dataRows  = hasHeader ? rows.slice(1) : rows;
-
-      if (rows.length === 0) {
-        await scriptCall({ action:'append', row: JSON.stringify(['Artist','Title','Country','Edition']) });
-      }
-
-      records = dataRows
-        .map(function(r, i) {
-          return { id:'r'+i, sheetRow:i, artist:r[0]||'', title:r[1]||'', country:r[2]||'', edition:r[3]||'' };
-        })
-        .filter(function(r){ return r.artist || r.title; });
-
-      setSyncStatus('ok', 'Synced · ' + records.length + ' records');
-      renderAll();
-    } catch(e) {
-      setSyncStatus('err', 'Connection failed: ' + e.message);
-      document.getElementById('records-list').innerHTML =
-        '<div class="empty-state"><div class="big-disc"></div><p>Could not connect.<br><small style="font-size:11px;color:var(--label-red)">' + esc(e.message) + '</small></p></div>';
+async function init() {
+  setSyncStatus('busy', 'Connecting to Google Sheets…');
+  try {
+    var data = await scriptCall({});
+    var rows = data.values || [];
+    var hasHeader = rows.length > 0 && rows[0][0] && rows[0][0].toLowerCase() === 'artist';
+    var dataRows = hasHeader ? rows.slice(1) : rows;
+    if (rows.length === 0) {
+      await scriptCall({ action:'append', row: JSON.stringify(['Artist','Title','Country','Edition']) });
     }
+    records = dataRows
+      .map(function(r, i){ return { id:'r'+i, sheetRow:i, artist:r[0]||'', title:r[1]||'', country:r[2]||'', edition:r[3]||'' }; })
+      .filter(function(r){ return r.artist || r.title; });
+    setSyncStatus('ok', 'Synced · ' + records.length + ' records');
+    renderAll();
+  } catch(e) {
+    setSyncStatus('err', 'Connection failed: ' + e.message);
+    document.getElementById('records-list').innerHTML =
+      '<div class="empty-state"><div class="big-disc"></div><p>Could not connect.<br><small style="font-size:11px;color:var(--label-red)">' + esc(e.message) + '</small></p></div>';
   }
+}
 
-  // ── Render ──────────────────────────────────────────────────
+function renderAll() { updateStats(); renderList(records); }
 
-  function renderAll() { updateStats(); renderList(records); }
+function updateStats() {
+  document.getElementById('total-count').textContent = records.length;
+  var artists = {};
+  records.forEach(function(r){ artists[r.artist.toLowerCase()] = 1; });
+  document.getElementById('artist-count').textContent = Object.keys(artists).length;
+  var countries = {};
+  records.filter(function(r){ return r.country; }).forEach(function(r){ countries[r.country]=1; });
+  document.getElementById('country-count').textContent = Object.keys(countries).length || '—';
+}
 
-  function updateStats() {
-    document.getElementById('total-count').textContent = records.length;
-    var artists = {};
-    records.forEach(function(r){ artists[r.artist.toLowerCase()] = 1; });
-    document.getElementById('artist-count').textContent = Object.keys(artists).length;
-    var countries = {};
-    records.filter(function(r){ return r.country; }).forEach(function(r){ countries[r.country]=1; });
-    document.getElementById('country-count').textContent = Object.keys(countries).length || '—';
+function renderList(list) {
+  var el = document.getElementById('records-list');
+  if (!list.length) {
+    var q = document.getElementById('search-input').value;
+    el.innerHTML = '<div class="empty-state"><div class="big-disc"></div><p>' + (q ? 'No records match your search.' : 'Your catalogue is empty.<br>Add your first record above.') + '</p></div>';
+    return;
   }
+  var cls = ['c1','c2','c3','c4','c5'];
+  el.innerHTML = list.map(function(r,i){
+    return '<div class="record-item">' +
+      '<div class="record-disc ' + cls[i%5] + '"></div>' +
+      '<div class="record-info">' +
+        '<div class="record-artist">' + esc(r.artist) + '</div>' +
+        '<div class="record-title">' + esc(r.title) + '</div>' +
+        ((r.country||r.edition) ? '<div class="record-meta">' +
+          (r.country?'<span class="tag">'+esc(r.country)+'</span>':'') +
+          (r.edition?'<span class="tag">'+esc(r.edition)+'</span>':'') +
+        '</div>' : '') +
+      '</div>' +
+      '<button class="delete-btn" onclick="app.deleteRecord(\'' + r.id + '\')">✕</button>' +
+    '</div>';
+  }).join('');
+}
 
-  function renderList(list) {
-    var el = document.getElementById('records-list');
-    if (!list.length) {
-      var q = document.getElementById('search-input').value;
-      el.innerHTML = '<div class="empty-state"><div class="big-disc"></div><p>' + (q ? 'No records match your search.' : 'Your catalogue is empty.<br>Add your first record above.') + '</p></div>';
-      return;
-    }
-    var cls = ['c1','c2','c3','c4','c5'];
-    el.innerHTML = list.map(function(r,i){
-      return '<div class="record-item">' +
-        '<div class="record-disc ' + cls[i%5] + '"></div>' +
-        '<div class="record-info">' +
-          '<div class="record-artist">' + esc(r.artist) + '</div>' +
-          '<div class="record-title">' + esc(r.title) + '</div>' +
-          ((r.country||r.edition) ? '<div class="record-meta">' +
-            (r.country?'<span class="tag">'+esc(r.country)+'</span>':'') +
-            (r.edition?'<span class="tag">'+esc(r.edition)+'</span>':'') +
-          '</div>' : '') +
-        '</div>' +
-        '<button class="delete-btn" onclick="app.deleteRecord(\'' + r.id + '\')">✕</button>' +
-      '</div>';
-    }).join('');
+function filterRecords() {
+  var q = document.getElementById('search-input').value.toLowerCase().trim();
+  var label = document.getElementById('list-label');
+  if (!q) { label.textContent='Collection'; renderList(records); return; }
+  var f = records.filter(function(r){
+    return r.artist.toLowerCase().indexOf(q)>=0 || r.title.toLowerCase().indexOf(q)>=0;
+  });
+  label.textContent = 'Results (' + f.length + ')';
+  renderList(f);
+}
+
+async function addRecord(artist, title, country, edition) {
+  country=country||''; edition=edition||'';
+  var dup = records.filter(function(r){
+    return r.artist.toLowerCase()===artist.toLowerCase() && r.title.toLowerCase()===title.toLowerCase();
+  })[0];
+  if (dup) { showStatus('Already in catalogue: ' + artist + ' — ' + title, 'error'); return false; }
+  setSyncStatus('busy', 'Saving…');
+  try {
+    await scriptCall({ action:'append', row: JSON.stringify([artist, title, country, edition]) });
+    records.push({ id:'r'+records.length, sheetRow:records.length, artist:artist, title:title, country:country, edition:edition });
+    setSyncStatus('ok', 'Synced · ' + records.length + ' records');
+    renderAll(); filterRecords();
+    return true;
+  } catch(e) {
+    setSyncStatus('err', 'Save failed: ' + e.message);
+    showStatus('Could not save: ' + e.message, 'error');
+    return false;
   }
+}
 
-  function filterRecords() {
-    var q = document.getElementById('search-input').value.toLowerCase().trim();
-    var label = document.getElementById('list-label');
-    if (!q) { label.textContent='Collection'; renderList(records); return; }
-    var f = records.filter(function(r){
-      return r.artist.toLowerCase().indexOf(q)>=0 || r.title.toLowerCase().indexOf(q)>=0;
-    });
-    label.textContent = 'Results (' + f.length + ')';
-    renderList(f);
+async function deleteRecord(id) {
+  var idx=-1;
+  records.forEach(function(r,i){ if(r.id===id) idx=i; });
+  if (idx===-1) return;
+  var rec = records[idx];
+  if (!confirm('Remove "' + rec.artist + ' — ' + rec.title + '"?')) return;
+  setSyncStatus('busy', 'Removing…');
+  try {
+    await scriptCall({ action:'delete', rowIndex: rec.sheetRow });
+    records.splice(idx, 1);
+    records.forEach(function(r,i){ r.id='r'+i; r.sheetRow=i; });
+    setSyncStatus('ok', 'Synced · ' + records.length + ' records');
+    renderAll(); filterRecords();
+  } catch(e) {
+    setSyncStatus('err', 'Delete failed: ' + e.message);
+    showStatus('Could not remove — check connection.', 'error');
   }
+}
 
-  // ── Add ─────────────────────────────────────────────────────
-
-  async function addRecord(artist, title, country, edition) {
-    country = country||''; edition = edition||'';
-    var dup = records.filter(function(r){
-      return r.artist.toLowerCase()===artist.toLowerCase() && r.title.toLowerCase()===title.toLowerCase();
-    })[0];
-    if (dup) { showStatus('Already in catalogue: ' + artist + ' — ' + title, 'error'); return false; }
-    setSyncStatus('busy', 'Saving…');
-    try {
-      await scriptCall({ action:'append', row: JSON.stringify([artist, title, country, edition]) });
-      records.push({ id:'r'+records.length, sheetRow:records.length, artist:artist, title:title, country:country, edition:edition });
-      setSyncStatus('ok', 'Synced · ' + records.length + ' records');
-      renderAll(); filterRecords();
-      return true;
-    } catch(e) {
-      setSyncStatus('err', 'Save failed: ' + e.message);
-      showStatus('Could not save: ' + e.message, 'error');
-      return false;
-    }
+async function addManual() {
+  var artist  = document.getElementById('m-artist').value.trim();
+  var title   = document.getElementById('m-title').value.trim();
+  var country = document.getElementById('m-country').value.trim();
+  var edition = document.getElementById('m-edition').value.trim();
+  if (!artist||!title) { showStatus('Artist and title are required.','error'); return; }
+  var ok = await addRecord(artist, title, country, edition);
+  if (ok) {
+    showStatus('Added: ' + artist + ' — ' + title, 'success');
+    ['m-artist','m-title','m-country','m-edition'].forEach(function(id){ document.getElementById(id).value=''; });
+    closePanel('manual-panel');
   }
+}
 
-  // ── Delete ──────────────────────────────────────────────────
-
-  async function deleteRecord(id) {
-    var idx = -1;
-    records.forEach(function(r,i){ if(r.id===id) idx=i; });
-    if (idx===-1) return;
-    var rec = records[idx];
-    if (!confirm('Remove "' + rec.artist + ' — ' + rec.title + '"?')) return;
-    setSyncStatus('busy', 'Removing…');
-    try {
-      await scriptCall({ action:'delete', rowIndex: rec.sheetRow });
-      records.splice(idx, 1);
-      records.forEach(function(r,i){ r.id='r'+i; r.sheetRow=i; });
-      setSyncStatus('ok', 'Synced · ' + records.length + ' records');
-      renderAll(); filterRecords();
-    } catch(e) {
-      setSyncStatus('err', 'Delete failed: ' + e.message);
-      showStatus('Could not remove — check connection.', 'error');
-    }
-  }
-
-  // ── Manual entry ─────────────────────────────────────────────
-
-  async function addManual() {
-    var artist  = document.getElementById('m-artist').value.trim();
-    var title   = document.getElementById('m-title').value.trim();
-    var country = document.getElementById('m-country').value.trim();
-    var edition = document.getElementById('m-edition').value.trim();
-    if (!artist||!title) { showStatus('Artist and title are required.','error'); return; }
-    var ok = await addRecord(artist, title, country, edition);
-    if (ok) {
-      showStatus('Added: ' + artist + ' — ' + title, 'success');
-      ['m-artist','m-title','m-country','m-edition'].forEach(function(id){ document.getElementById(id).value=''; });
-      closePanel('manual-panel');
-    }
-  }
-
-  // ── Panels ───────────────────────────────────────────────────
-
-  function togglePanel(id) {
-    var panel = document.getElementById(id);
-    var isHidden = panel.classList.contains('hidden');
-    ['barcode-panel','manual-panel','photo-panel'].forEach(function(p){
-      document.getElementById(p).classList.add('hidden');
-    });
-    if (isHidden) {
-      panel.classList.remove('hidden');
-      if (id==='barcode-panel') startScanner();
-    } else {
-      if (id==='barcode-panel') stopScanner();
-    }
-  }
-
-  function closePanel(id) {
-    document.getElementById(id).classList.add('hidden');
+function togglePanel(id) {
+  var panel = document.getElementById(id);
+  var isHidden = panel.classList.contains('hidden');
+  ['barcode-panel','manual-panel'].forEach(function(p){ document.getElementById(p).classList.add('hidden'); });
+  if (isHidden) {
+    panel.classList.remove('hidden');
+    if (id==='barcode-panel') startScanner();
+  } else {
     if (id==='barcode-panel') stopScanner();
   }
+}
 
-  // ── Scanner ──────────────────────────────────────────────────
+function closePanel(id) {
+  document.getElementById(id).classList.add('hidden');
+  if (id==='barcode-panel') stopScanner();
+}
 
-  async function startScanner() {
-    scanActive=true; barcodeData=null;
-    document.getElementById('barcode-result').classList.add('hidden');
-    document.getElementById('barcode-form').classList.add('hidden');
-    var statusEl = document.getElementById('scanner-status');
-    statusEl.textContent = 'Requesting camera…';
-    try {
-      var stream = await navigator.mediaDevices.getUserMedia({
-        video:{ facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720} }
+function startScanner() {
+  scanning = true;
+  barcodeData = null;
+  document.getElementById('barcode-result').classList.add('hidden');
+  document.getElementById('barcode-form').classList.add('hidden');
+  document.getElementById('scanner-status').textContent = 'Requesting camera…';
+
+  try {
+    codeReader = new ZXing.BrowserMultiFormatReader();
+    codeReader.listVideoInputDevices().then(function(devices) {
+      // prefer back camera
+      var deviceId = undefined;
+      devices.forEach(function(d) {
+        if (d.label.toLowerCase().indexOf('back') >= 0 ||
+            d.label.toLowerCase().indexOf('rear') >= 0 ||
+            d.label.toLowerCase().indexOf('environment') >= 0) {
+          deviceId = d.deviceId;
+        }
       });
-      var video = document.getElementById('scanner-video');
-      video.srcObject = stream; await video.play();
-      statusEl.textContent = 'Point at the barcode…';
-      zxingReader = new ZXing.BrowserMultiFormatReader();
-      tickScan();
-    } catch(err) {
-      statusEl.textContent = 'Camera error: ' + (err.message||'permission denied');
-      scanActive = false;
-    }
-  }
+      if (!deviceId && devices.length > 0) deviceId = devices[devices.length - 1].deviceId;
 
-  function tickScan() {
-    if (!scanActive) return;
-    var video  = document.getElementById('scanner-video');
-    var canvas = document.getElementById('scanner-canvas');
-    if (video.readyState < 2) { requestAnimationFrame(tickScan); return; }
-    canvas.width=video.videoWidth; canvas.height=video.videoHeight;
-    canvas.getContext('2d').drawImage(video,0,0);
-    zxingReader.decodeFromCanvas(canvas).then(function(result){
-      if (result && scanActive) { scanActive=false; stopVideoTracks(); lookupBarcode(result.getText()); }
-    }).catch(function(){ if(scanActive) requestAnimationFrame(tickScan); });
-  }
+      document.getElementById('scanner-status').textContent = 'Point at the barcode…';
 
-  function stopVideoTracks() {
-    var v = document.getElementById('scanner-video');
-    if (v.srcObject) { v.srcObject.getTracks().forEach(function(t){t.stop();}); v.srcObject=null; }
+      codeReader.decodeFromVideoDevice(deviceId, 'scanner-video', function(result, err) {
+        if (result && scanning) {
+          scanning = false;
+          codeReader.reset();
+          lookupBarcode(result.getText());
+        }
+      });
+    }).catch(function(err) {
+      document.getElementById('scanner-status').textContent = 'Camera error: ' + (err.message || 'permission denied');
+      scanning = false;
+    });
+  } catch(err) {
+    document.getElementById('scanner-status').textContent = 'Scanner unavailable — enter manually.';
+    scanning = false;
   }
-  function stopScanner() { scanActive=false; stopVideoTracks(); }
+}
 
-  async function lookupBarcode(code) {
-    var statusEl = document.getElementById('scanner-status');
-    statusEl.innerHTML = '<span class="spinner"></span> Looking up ' + code + '…';
-    try {
-      var res = await fetch('https://api.discogs.com/database/search?barcode='+code, {headers:{'User-Agent':'VinylCatalogue/1.0'}});
-      var data = await res.json();
-      if (data.results && data.results.length > 0) {
-        var parts = (data.results[0].title||'').split(' - ');
-        barcodeData = { artist:parts[0]||'', title:parts.slice(1).join(' - ')||data.results[0].title||'' };
-        var resultEl = document.getElementById('barcode-result');
-        resultEl.className = 'lookup-result';
-        resultEl.innerHTML = '<strong>'+esc(barcodeData.artist)+' — '+esc(barcodeData.title)+'</strong><span>via Discogs · '+code+'</span>';
-        resultEl.classList.remove('hidden');
-        document.getElementById('barcode-form').classList.remove('hidden');
-        statusEl.textContent = 'Found! Add optional details below.';
-      } else {
-        statusEl.textContent = 'Barcode not found — enter manually.';
-        setTimeout(function(){ closePanel('barcode-panel'); togglePanel('manual-panel'); }, 1200);
-      }
-    } catch(e) {
-      statusEl.textContent = 'Lookup failed — enter manually.';
+function stopScanner() {
+  scanning = false;
+  if (codeReader) { try { codeReader.reset(); } catch(e) {} codeReader = null; }
+}
+
+async function lookupBarcode(code) {
+  var statusEl = document.getElementById('scanner-status');
+  statusEl.innerHTML = '<span class="spinner"></span> Looking up ' + code + '…';
+  try {
+    var res = await fetch('https://api.discogs.com/database/search?barcode='+code, {headers:{'User-Agent':'VinylCatalogue/1.0'}});
+    var data = await res.json();
+    if (data.results && data.results.length > 0) {
+      var parts = (data.results[0].title||'').split(' - ');
+      barcodeData = { artist:parts[0]||'', title:parts.slice(1).join(' - ')||data.results[0].title||'' };
+      var resultEl = document.getElementById('barcode-result');
+      resultEl.className = 'lookup-result';
+      resultEl.innerHTML = '<strong>'+esc(barcodeData.artist)+' — '+esc(barcodeData.title)+'</strong><span>via Discogs · '+code+'</span>';
+      resultEl.classList.remove('hidden');
+      document.getElementById('barcode-form').classList.remove('hidden');
+      statusEl.textContent = 'Found! Add optional details below.';
+    } else {
+      statusEl.textContent = 'Barcode not found — enter manually.';
       setTimeout(function(){ closePanel('barcode-panel'); togglePanel('manual-panel'); }, 1200);
     }
+  } catch(e) {
+    statusEl.textContent = 'Lookup failed — enter manually.';
+    setTimeout(function(){ closePanel('barcode-panel'); togglePanel('manual-panel'); }, 1200);
   }
-
-  async function saveFromBarcode() {
-    if (!barcodeData||typeof barcodeData!=='object') return;
-    var country = document.getElementById('bc-country').value.trim();
-    var edition = document.getElementById('bc-edition').value.trim();
-    var ok = await addRecord(barcodeData.artist, barcodeData.title, country, edition);
-    if (ok) {
-      showStatus('Added: '+barcodeData.artist+' — '+barcodeData.title, 'success');
-      document.getElementById('bc-country').value='';
-      document.getElementById('bc-edition').value='';
-      barcodeData=null; closePanel('barcode-panel');
-    }
-  }
-
-  // ── Photo / AI ───────────────────────────────────────────────
-
-  function triggerPhoto() { document.getElementById('photo-input').click(); }
-
-  async function handlePhoto(event) {
-    var file = event.target.files[0]; if (!file) return;
-    document.getElementById('photo-panel').classList.remove('hidden');
-    var body = document.getElementById('photo-panel-body');
-    body.innerHTML = '<div style="text-align:center;padding:1rem 0;color:var(--muted);font-size:13px;"><span class="spinner"></span> Reading sleeve with AI…</div>';
-    var base64 = await new Promise(function(res,rej){
-      var r=new FileReader(); r.onload=function(e){res(e.target.result.split(',')[1]);}; r.onerror=rej; r.readAsDataURL(file);
-    });
-    try {
-      var response = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:300, messages:[{role:'user',content:[
-          {type:'image',source:{type:'base64',media_type:file.type||'image/jpeg',data:base64}},
-          {type:'text',text:'This is a vinyl record sleeve. Extract the artist name and album title. Respond ONLY with valid JSON: {"artist":"...","title":"...","confidence":"high|medium|low"}'}
-        ]}]})
-      });
-      var data = await response.json();
-      var text = data.content.map(function(i){return i.text||'';}).join('');
-      var parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
-      body.innerHTML =
-        '<div class="lookup-result"><strong>'+esc(parsed.artist)+' — '+esc(parsed.title)+'</strong><span>AI confidence: '+parsed.confidence+'</span></div>'+
-        '<div class="form-row">'+
-          '<div class="form-group"><label>Artist</label><input type="text" id="ph-artist" value="'+esc(parsed.artist)+'"></div>'+
-          '<div class="form-group"><label>Title</label><input type="text" id="ph-title" value="'+esc(parsed.title)+'"></div>'+
-        '</div>'+
-        '<div class="form-row">'+
-          '<div class="form-group"><label>Country (optional)</label><input type="text" id="ph-country" placeholder="e.g. UK"></div>'+
-          '<div class="form-group"><label>Edition (optional)</label><input type="text" id="ph-edition" placeholder="e.g. Original"></div>'+
-        '</div>'+
-        '<button class="submit-btn" onclick="app.saveFromPhoto()">Add to catalogue</button>'+
-        '<p class="ai-note">Check and correct before saving.</p>';
-    } catch(e) {
-      body.innerHTML = '<div style="color:var(--label-red);font-size:13px;text-align:center;padding:1rem;">Couldn\'t read the sleeve. <button onclick="app.closePanel(\'photo-panel\');app.togglePanel(\'manual-panel\');" style="background:none;border:none;cursor:pointer;color:var(--label-red);text-decoration:underline;font-family:inherit;font-size:13px;">Enter manually →</button></div>';
-    }
-    event.target.value='';
-  }
-
-  async function saveFromPhoto() {
-    var artist  = document.getElementById('ph-artist').value.trim();
-    var title   = document.getElementById('ph-title').value.trim();
-    var country = document.getElementById('ph-country').value.trim();
-    var edition = document.getElementById('ph-edition').value.trim();
-    if (!artist||!title) { showStatus('Artist and title required.','error'); return; }
-    var ok = await addRecord(artist,title,country,edition);
-    if (ok) { showStatus('Added: '+artist+' — '+title,'success'); closePanel('photo-panel'); }
-  }
-
-  // ── Export CSV ───────────────────────────────────────────────
-
-  function exportCSV() {
-    if (!records.length) { showStatus('Nothing to export yet.','error'); return; }
-    var rows = [['Artist','Title','Country','Edition']].concat(
-      records.map(function(r){return [r.artist,r.title,r.country||'',r.edition||''];})
-    );
-    var csv = rows.map(function(r){
-      return r.map(function(c){return '"'+c.replace(/"/g,'""')+'"';}).join(',');
-    }).join('\n');
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-    a.download='vinyl_catalogue.csv'; a.click();
-  }
-
-  // ── Expose to HTML ───────────────────────────────────────────
-
-  window.app = {
-    togglePanel:     togglePanel,
-    closePanel:      closePanel,
-    addManual:       addManual,
-    saveFromBarcode: saveFromBarcode,
-    saveFromPhoto:   saveFromPhoto,
-    deleteRecord:    deleteRecord,
-    triggerPhoto:    triggerPhoto,
-    handlePhoto:     handlePhoto,
-    filterRecords:   filterRecords,
-    exportCSV:       exportCSV
-  };
-
-  init();
 }
+
+async function saveFromBarcode() {
+  if (!barcodeData||typeof barcodeData!=='object') return;
+  var country = document.getElementById('bc-country').value.trim();
+  var edition = document.getElementById('bc-edition').value.trim();
+  var ok = await addRecord(barcodeData.artist, barcodeData.title, country, edition);
+  if (ok) {
+    showStatus('Added: '+barcodeData.artist+' — '+barcodeData.title, 'success');
+    document.getElementById('bc-country').value='';
+    document.getElementById('bc-edition').value='';
+    barcodeData=null; closePanel('barcode-panel');
+  }
+}
+
+function exportCSV() {
+  if (!records.length) { showStatus('Nothing to export yet.','error'); return; }
+  var rows = [['Artist','Title','Country','Edition']].concat(
+    records.map(function(r){return [r.artist,r.title,r.country||'',r.edition||''];})
+  );
+  var csv = rows.map(function(r){
+    return r.map(function(c){return '"'+c.replace(/"/g,'""')+'"';}).join(',');
+  }).join('\n');
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='vinyl_catalogue.csv'; a.click();
+}
+
+window.app = {
+  togglePanel:     togglePanel,
+  closePanel:      closePanel,
+  addManual:       addManual,
+  saveFromBarcode: saveFromBarcode,
+  deleteRecord:    deleteRecord,
+  filterRecords:   filterRecords,
+  exportCSV:       exportCSV
+};
+
+init();
 </script>
 </body>
 </html>
+
