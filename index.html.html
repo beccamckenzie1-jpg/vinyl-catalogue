@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Catalogue — Vinyl Collection</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #1a1208; --cream: #f5f0e8; --warm: #e8dfc8; --groove: #2a1f0e;
+    --label-red: #c0392b; --muted: #7a6e5f; --border: rgba(26,18,8,0.15); --card-bg: #fffef9;
+  }
+  body { font-family: 'DM Mono', monospace; background: var(--cream); color: var(--ink); min-height: 100vh; }
+  .app { max-width: 680px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+  .header { text-align: center; margin-bottom: 2.5rem; }
+  .header::after { content: ''; display: block; height: 1px; background: linear-gradient(to right, transparent, var(--ink), transparent); margin-top: 1.5rem; opacity: 0.2; }
+  .record-icon { width: 56px; height: 56px; margin: 0 auto 1rem; border-radius: 50%; background: var(--groove); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px var(--warm), 0 0 0 8px rgba(26,18,8,0.08); }
+  .record-icon::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--cream); }
+  h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; letter-spacing: -0.02em; color: var(--groove); }
+  .subtitle { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-top: 0.25rem; }
+  .sync-status { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 11px; color: var(--muted); margin-top: 0.75rem; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .sync-dot.ok { background: #2e7d32; }
+  .sync-dot.err { background: var(--label-red); }
+  .sync-dot.busy { animation: pulse 1s ease-in-out infinite; background: #d4820a; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .stats-row { display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 2rem; }
+  .stat { flex: 1; background: var(--card-bg); padding: 0.75rem 1rem; text-align: center; }
+  .stat-num { font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: var(--groove); }
+  .stat-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .search-bar { position: relative; margin-bottom: 1.25rem; }
+  .search-bar input { width: 100%; padding: 0.875rem 1rem 0.875rem 2.75rem; font-family: 'DM Mono', monospace; font-size: 14px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; color: var(--ink); outline: none; }
+  .search-bar svg { position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); opacity: 0.35; pointer-events: none; }
+  .action-row { display: flex; gap: 8px; margin-bottom: 2rem; }
+  .btn { flex: 1; padding: 0.75rem 0.5rem; font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.05em; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--card-bg); color: var(--ink); transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .btn:hover { background: var(--warm); border-color: rgba(26,18,8,0.3); }
+  .btn:active { transform: scale(0.97); }
+  .btn.primary { background: var(--groove); color: var(--cream); border-color: var(--groove); }
+  .btn.primary:hover { background: #1a1208; }
+  .btn-icon { font-size: 20px; line-height: 1; }
+  .btn-label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8; }
+  .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 1.25rem; overflow: hidden; }
+  .panel-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid var(--border); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; justify-content: space-between; }
+  .close-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 18px; line-height: 1; padding: 0; }
+  .panel-body { padding: 1.25rem; }
+  .form-group { margin-bottom: 1rem; }
+  .form-group label { display: block; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+  .form-group input { width: 100%; padding: 0.625rem 0.875rem; font-family: 'DM Mono', monospace; font-size: 13px; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; color: var(--ink); outline: none; }
+  .form-group input:focus { border-color: rgba(26,18,8,0.4); background: #fff; }
+  .form-row { display: flex; gap: 10px; }
+  .form-row .form-group { flex: 1; }
+  .submit-btn { width: 100%; padding: 0.75rem; margin-top: 1.25rem; font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: 0.06em; background: var(--groove); color: var(--cream); border: none; border-radius: 8px; cursor: pointer; }
+  .submit-btn:hover { background: #1a1208; }
+  #scanner-wrap { position: relative; background: #000; border-radius: 8px; overflow: hidden; width: 100%; aspect-ratio: 4/3; margin-bottom: 1rem; }
+  #scanner-video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #scanner-canvas { display: none; }
+  .scanner-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 72%; height: 28%; border: 2px solid rgba(255,255,255,0.7); border-radius: 4px; box-shadow: 0 0 0 1000px rgba(0,0,0,0.5); pointer-events: none; }
+  .scanner-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--label-red); animation: scan 2s ease-in-out infinite; }
+  @keyframes scan { 0%,100%{top:8%} 50%{top:88%} }
+  .scanner-status { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 0.75rem; min-height: 20px; }
+  #photo-input { display: none; }
+  .record-item { display: flex; align-items: flex-start; gap: 1rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  .record-item:last-child { border-bottom: none; }
+  .record-item:hover { background: #faf8f3; }
+  .record-disc { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+  .record-disc::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--cream); }
+  .record-disc.c1{background:#8B2635}.record-disc.c2{background:#1a3a5c}.record-disc.c3{background:#2d5a27}.record-disc.c4{background:#5a3a1a}.record-disc.c5{background:#3a1a5a}
+  .record-info { flex: 1; min-width: 0; }
+  .record-artist { font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--groove); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .record-title { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .record-meta { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .tag { font-size: 10px; padding: 2px 7px; border-radius: 3px; background: var(--warm); color: var(--muted); }
+  .delete-btn { background: none; border: none; cursor: pointer; color: var(--muted); opacity: 0; transition: opacity 0.15s; padding: 4px; font-size: 14px; flex-shrink: 0; align-self: center; }
+  .record-item:hover .delete-btn { opacity: 1; }
+  .delete-btn:hover { color: var(--label-red); }
+  .empty-state { padding: 3rem 1.5rem; text-align: center; }
+  .empty-state .big-disc { width: 80px; height: 80px; border-radius: 50%; background: var(--groove); margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; opacity: 0.15; }
+  .empty-state .big-disc::after { content: ''; width: 16px; height: 16px; border-radius: 50%; background: var(--cream); }
+  .empty-state p { color: var(--muted); font-size: 13px; line-height: 1.6; }
+  .status-msg { font-size: 12px; padding: 0.625rem 1rem; border-radius: 6px; margin-bottom: 1rem; text-align: center; }
+  .status-msg.success { background: #e8f5e9; color: #2e7d32; }
+  .status-msg.error { background: #fdecea; color: #c62828; }
+  .status-msg.info { background: #e8f0fe; color: #1a4abc; }
+  .lookup-result { background: var(--warm); border-radius: 6px; padding: 0.875rem 1rem; margin-bottom: 1rem; font-size: 13px; }
+  .lookup-result strong { display: block; font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--groove); }
+  .lookup-result span { color: var(--muted); font-size: 12px; }
+  .section-title { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between; }
+  .export-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; color: var(--muted); }
+  .export-btn:hover { background: var(--warm); color: var(--ink); }
+  .hidden { display: none !important; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(26,18,8,0.1); border-top-color: var(--ink); border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ai-note { font-size: 11px; color: var(--muted); text-align: center; margin-top: 0.5rem; font-style: italic; }
+  .loading-screen { padding: 3rem 1.5rem; text-align: center; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="record-icon"></div>
+    <h1>The Catalogue</h1>
+    <p class="subtitle">Your vinyl collection</p>
+    <div class="sync-status">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">Connecting…</span>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-num" id="total-count">—</div><div class="stat-label">Records</div></div>
+    <div class="stat"><div class="stat-num" id="artist-count">—</div><div class="stat-label">Artists</div></div>
+    <div class="stat"><div class="stat-num" id="country-count">—</div><div class="stat-label">Countries</div></div>
+  </div>
+
+  <div class="search-bar">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#1a1208" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="#1a1208" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <input type="text" id="search-input" placeholder="Search artist or title…" oninput="app.filterRecords()">
+  </div>
+
+  <div class="action-row">
+    <button class="btn" onclick="app.togglePanel('barcode-panel')">
+      <span class="btn-icon">📷</span><span class="btn-label">Scan barcode</span>
+    </button>
+    <button class="btn" onclick="app.triggerPhoto()">
+      <span class="btn-icon">🖼️</span><span class="btn-label">Photo sleeve</span>
+    </button>
+    <button class="btn primary" onclick="app.togglePanel('manual-panel')">
+      <span class="btn-icon">✏️</span><span class="btn-label">Add manually</span>
+    </button>
+  </div>
+
+  <input type="file" id="photo-input" accept="image/*" capture="environment" onchange="app.handlePhoto(event)">
+
+  <div class="panel hidden" id="barcode-panel">
+    <div class="panel-header">Barcode scanner <button class="close-btn" onclick="app.closePanel('barcode-panel')">×</button></div>
+    <div class="panel-body">
+      <div id="scanner-status" class="scanner-status">Initialising camera…</div>
+      <div id="scanner-wrap">
+        <video id="scanner-video" autoplay playsinline muted></video>
+        <canvas id="scanner-canvas"></canvas>
+        <div class="scanner-overlay"><div class="scanner-line"></div></div>
+      </div>
+      <div id="barcode-result" class="hidden"></div>
+      <div id="barcode-form" class="hidden">
+        <div class="form-row">
+          <div class="form-group"><label>Country (optional)</label><input type="text" id="bc-country" placeholder="e.g. UK, US, DE"></div>
+          <div class="form-group"><label>Edition (optional)</label><input type="text" id="bc-edition" placeholder="e.g. Original, Repress"></div>
+        </div>
+        <button class="submit-btn" onclick="app.saveFromBarcode()">Add to catalogue</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel hidden" id="manual-panel">
+    <div class="panel-header">Add record manually <button class="close-btn" onclick="app.closePanel('manual-panel')">×</button></div>
+    <div class="panel-body">
+      <div class="form-group"><label>Artist *</label><input type="text" id="m-artist" placeholder="e.g. David Bowie"></div>
+      <div class="form-group"><label>Title *</label><input type="text" id="m-title" placeholder="e.g. Ziggy Stardust"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Country (optional)</label><input type="text" id="m-country" placeholder="e.g. UK"></div>
+        <div class="form-group"><label>Edition (optional)</label><input type="text" id="m-edition" placeholder="e.g. Original"></div>
+      </div>
+      <button class="submit-btn" onclick="app.addManual()">Add to catalogue</button>
+    </div>
+  </div>
+
+  <div class="panel hidden" id="photo-panel">
+    <div class="panel-header">Reading sleeve… <button class="close-btn" onclick="app.closePanel('photo-panel')">×</button></div>
+    <div class="panel-body" id="photo-panel-body"></div>
+  </div>
+
+  <div id="status-area"></div>
+
+  <div>
+    <div class="section-title">
+      <span id="list-label">Collection</span>
+      <button class="export-btn" onclick="app.exportCSV()">Export CSV</button>
+    </div>
+    <div class="panel">
+      <div id="records-list">
+        <div class="loading-screen"><span class="spinner"></span> Loading your collection…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWakCy6WRWol9XiwxOe8aEAM_8LoaSxjIGa01upau9alkT2kAE-MPWPhfAHEFKttqf/exec';
+
+const zxingScript = document.createElement('script');
+zxingScript.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js';
+zxingScript.onload = bootApp;
+document.head.appendChild(zxingScript);
+
+function bootApp() {
+  var records     = [];
+  var barcodeData = null;
+  var zxingReader = null;
+  var scanActive  = false;
+
+  function setSyncStatus(state, msg) {
+    document.getElementById('sync-dot').className = 'sync-dot' + (state ? ' ' + state : '');
+    document.getElementById('sync-label').textContent = msg;
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function showStatus(msg, type) {
+    var el = document.getElementById('status-area');
+    el.innerHTML = '<div class="status-msg ' + (type||'info') + '">' + esc(msg) + '</div>';
+    setTimeout(function(){ el.innerHTML=''; }, 3500);
+  }
+
+  // ── All calls via GET with URL params ───────────────────────
+
+  async function scriptCall(params) {
+    var qs = Object.keys(params).map(function(k){
+      return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+    }).join('&');
+    var url = SCRIPT_URL + (qs ? '?' + qs : '');
+    var res = await fetch(url);
+    if (!res.ok) throw new Error('Request failed (' + res.status + ')');
+    var data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+  }
+
+  // ── Init ────────────────────────────────────────────────────
+
+  async function init() {
+    setSyncStatus('busy', 'Connecting to Google Sheets…');
+    try {
+      var data = await scriptCall({});
+      var rows = data.values || [];
+      var hasHeader = rows.length > 0 && rows[0][0] && rows[0][0].toLowerCase() === 'artist';
+      var dataRows  = hasHeader ? rows.slice(1) : rows;
+
+      if (rows.length === 0) {
+        await scriptCall({ action:'append', row: JSON.stringify(['Artist','Title','Country','Edition']) });
+      }
+
+      records = dataRows
+        .map(function(r, i) {
+          return { id:'r'+i, sheetRow:i, artist:r[0]||'', title:r[1]||'', country:r[2]||'', edition:r[3]||'' };
+        })
+        .filter(function(r){ return r.artist || r.title; });
+
+      setSyncStatus('ok', 'Synced · ' + records.length + ' records');
+      renderAll();
+    } catch(e) {
+      setSyncStatus('err', 'Connection failed: ' + e.message);
+      document.getElementById('records-list').innerHTML =
+        '<div class="empty-state"><div class="big-disc"></div><p>Could not connect.<br><small style="font-size:11px;color:var(--label-red)">' + esc(e.message) + '</small></p></div>';
+    }
+  }
+
+  // ── Render ──────────────────────────────────────────────────
+
+  function renderAll() { updateStats(); renderList(records); }
+
+  function updateStats() {
+    document.getElementById('total-count').textContent = records.length;
+    var artists = {};
+    records.forEach(function(r){ artists[r.artist.toLowerCase()] = 1; });
+    document.getElementById('artist-count').textContent = Object.keys(artists).length;
+    var countries = {};
+    records.filter(function(r){ return r.country; }).forEach(function(r){ countries[r.country]=1; });
+    document.getElementById('country-count').textContent = Object.keys(countries).length || '—';
+  }
+
+  function renderList(list) {
+    var el = document.getElementById('records-list');
+    if (!list.length) {
+      var q = document.getElementById('search-input').value;
+      el.innerHTML = '<div class="empty-state"><div class="big-disc"></div><p>' + (q ? 'No records match your search.' : 'Your catalogue is empty.<br>Add your first record above.') + '</p></div>';
+      return;
+    }
+    var cls = ['c1','c2','c3','c4','c5'];
+    el.innerHTML = list.map(function(r,i){
+      return '<div class="record-item">' +
+        '<div class="record-disc ' + cls[i%5] + '"></div>' +
+        '<div class="record-info">' +
+          '<div class="record-artist">' + esc(r.artist) + '</div>' +
+          '<div class="record-title">' + esc(r.title) + '</div>' +
+          ((r.country||r.edition) ? '<div class="record-meta">' +
+            (r.country?'<span class="tag">'+esc(r.country)+'</span>':'') +
+            (r.edition?'<span class="tag">'+esc(r.edition)+'</span>':'') +
+          '</div>' : '') +
+        '</div>' +
+        '<button class="delete-btn" onclick="app.deleteRecord(\'' + r.id + '\')">✕</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function filterRecords() {
+    var q = document.getElementById('search-input').value.toLowerCase().trim();
+    var label = document.getElementById('list-label');
+    if (!q) { label.textContent='Collection'; renderList(records); return; }
+    var f = records.filter(function(r){
+      return r.artist.toLowerCase().indexOf(q)>=0 || r.title.toLowerCase().indexOf(q)>=0;
+    });
+    label.textContent = 'Results (' + f.length + ')';
+    renderList(f);
+  }
+
+  // ── Add ─────────────────────────────────────────────────────
+
+  async function addRecord(artist, title, country, edition) {
+    country = country||''; edition = edition||'';
+    var dup = records.filter(function(r){
+      return r.artist.toLowerCase()===artist.toLowerCase() && r.title.toLowerCase()===title.toLowerCase();
+    })[0];
+    if (dup) { showStatus('Already in catalogue: ' + artist + ' — ' + title, 'error'); return false; }
+    setSyncStatus('busy', 'Saving…');
+    try {
+      await scriptCall({ action:'append', row: JSON.stringify([artist, title, country, edition]) });
+      records.push({ id:'r'+records.length, sheetRow:records.length, artist:artist, title:title, country:country, edition:edition });
+      setSyncStatus('ok', 'Synced · ' + records.length + ' records');
+      renderAll(); filterRecords();
+      return true;
+    } catch(e) {
+      setSyncStatus('err', 'Save failed: ' + e.message);
+      showStatus('Could not save: ' + e.message, 'error');
+      return false;
+    }
+  }
+
+  // ── Delete ──────────────────────────────────────────────────
+
+  async function deleteRecord(id) {
+    var idx = -1;
+    records.forEach(function(r,i){ if(r.id===id) idx=i; });
+    if (idx===-1) return;
+    var rec = records[idx];
+    if (!confirm('Remove "' + rec.artist + ' — ' + rec.title + '"?')) return;
+    setSyncStatus('busy', 'Removing…');
+    try {
+      await scriptCall({ action:'delete', rowIndex: rec.sheetRow });
+      records.splice(idx, 1);
+      records.forEach(function(r,i){ r.id='r'+i; r.sheetRow=i; });
+      setSyncStatus('ok', 'Synced · ' + records.length + ' records');
+      renderAll(); filterRecords();
+    } catch(e) {
+      setSyncStatus('err', 'Delete failed: ' + e.message);
+      showStatus('Could not remove — check connection.', 'error');
+    }
+  }
+
+  // ── Manual entry ─────────────────────────────────────────────
+
+  async function addManual() {
+    var artist  = document.getElementById('m-artist').value.trim();
+    var title   = document.getElementById('m-title').value.trim();
+    var country = document.getElementById('m-country').value.trim();
+    var edition = document.getElementById('m-edition').value.trim();
+    if (!artist||!title) { showStatus('Artist and title are required.','error'); return; }
+    var ok = await addRecord(artist, title, country, edition);
+    if (ok) {
+      showStatus('Added: ' + artist + ' — ' + title, 'success');
+      ['m-artist','m-title','m-country','m-edition'].forEach(function(id){ document.getElementById(id).value=''; });
+      closePanel('manual-panel');
+    }
+  }
+
+  // ── Panels ───────────────────────────────────────────────────
+
+  function togglePanel(id) {
+    var panel = document.getElementById(id);
+    var isHidden = panel.classList.contains('hidden');
+    ['barcode-panel','manual-panel','photo-panel'].forEach(function(p){
+      document.getElementById(p).classList.add('hidden');
+    });
+    if (isHidden) {
+      panel.classList.remove('hidden');
+      if (id==='barcode-panel') startScanner();
+    } else {
+      if (id==='barcode-panel') stopScanner();
+    }
+  }
+
+  function closePanel(id) {
+    document.getElementById(id).classList.add('hidden');
+    if (id==='barcode-panel') stopScanner();
+  }
+
+  // ── Scanner ──────────────────────────────────────────────────
+
+  async function startScanner() {
+    scanActive=true; barcodeData=null;
+    document.getElementById('barcode-result').classList.add('hidden');
+    document.getElementById('barcode-form').classList.add('hidden');
+    var statusEl = document.getElementById('scanner-status');
+    statusEl.textContent = 'Requesting camera…';
+    try {
+      var stream = await navigator.mediaDevices.getUserMedia({
+        video:{ facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720} }
+      });
+      var video = document.getElementById('scanner-video');
+      video.srcObject = stream; await video.play();
+      statusEl.textContent = 'Point at the barcode…';
+      zxingReader = new ZXing.BrowserMultiFormatReader();
+      tickScan();
+    } catch(err) {
+      statusEl.textContent = 'Camera error: ' + (err.message||'permission denied');
+      scanActive = false;
+    }
+  }
+
+  function tickScan() {
+    if (!scanActive) return;
+    var video  = document.getElementById('scanner-video');
+    var canvas = document.getElementById('scanner-canvas');
+    if (video.readyState < 2) { requestAnimationFrame(tickScan); return; }
+    canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+    canvas.getContext('2d').drawImage(video,0,0);
+    zxingReader.decodeFromCanvas(canvas).then(function(result){
+      if (result && scanActive) { scanActive=false; stopVideoTracks(); lookupBarcode(result.getText()); }
+    }).catch(function(){ if(scanActive) requestAnimationFrame(tickScan); });
+  }
+
+  function stopVideoTracks() {
+    var v = document.getElementById('scanner-video');
+    if (v.srcObject) { v.srcObject.getTracks().forEach(function(t){t.stop();}); v.srcObject=null; }
+  }
+  function stopScanner() { scanActive=false; stopVideoTracks(); }
+
+  async function lookupBarcode(code) {
+    var statusEl = document.getElementById('scanner-status');
+    statusEl.innerHTML = '<span class="spinner"></span> Looking up ' + code + '…';
+    try {
+      var res = await fetch('https://api.discogs.com/database/search?barcode='+code, {headers:{'User-Agent':'VinylCatalogue/1.0'}});
+      var data = await res.json();
+      if (data.results && data.results.length > 0) {
+        var parts = (data.results[0].title||'').split(' - ');
+        barcodeData = { artist:parts[0]||'', title:parts.slice(1).join(' - ')||data.results[0].title||'' };
+        var resultEl = document.getElementById('barcode-result');
+        resultEl.className = 'lookup-result';
+        resultEl.innerHTML = '<strong>'+esc(barcodeData.artist)+' — '+esc(barcodeData.title)+'</strong><span>via Discogs · '+code+'</span>';
+        resultEl.classList.remove('hidden');
+        document.getElementById('barcode-form').classList.remove('hidden');
+        statusEl.textContent = 'Found! Add optional details below.';
+      } else {
+        statusEl.textContent = 'Barcode not found — enter manually.';
+        setTimeout(function(){ closePanel('barcode-panel'); togglePanel('manual-panel'); }, 1200);
+      }
+    } catch(e) {
+      statusEl.textContent = 'Lookup failed — enter manually.';
+      setTimeout(function(){ closePanel('barcode-panel'); togglePanel('manual-panel'); }, 1200);
+    }
+  }
+
+  async function saveFromBarcode() {
+    if (!barcodeData||typeof barcodeData!=='object') return;
+    var country = document.getElementById('bc-country').value.trim();
+    var edition = document.getElementById('bc-edition').value.trim();
+    var ok = await addRecord(barcodeData.artist, barcodeData.title, country, edition);
+    if (ok) {
+      showStatus('Added: '+barcodeData.artist+' — '+barcodeData.title, 'success');
+      document.getElementById('bc-country').value='';
+      document.getElementById('bc-edition').value='';
+      barcodeData=null; closePanel('barcode-panel');
+    }
+  }
+
+  // ── Photo / AI ───────────────────────────────────────────────
+
+  function triggerPhoto() { document.getElementById('photo-input').click(); }
+
+  async function handlePhoto(event) {
+    var file = event.target.files[0]; if (!file) return;
+    document.getElementById('photo-panel').classList.remove('hidden');
+    var body = document.getElementById('photo-panel-body');
+    body.innerHTML = '<div style="text-align:center;padding:1rem 0;color:var(--muted);font-size:13px;"><span class="spinner"></span> Reading sleeve with AI…</div>';
+    var base64 = await new Promise(function(res,rej){
+      var r=new FileReader(); r.onload=function(e){res(e.target.result.split(',')[1]);}; r.onerror=rej; r.readAsDataURL(file);
+    });
+    try {
+      var response = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:300, messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:file.type||'image/jpeg',data:base64}},
+          {type:'text',text:'This is a vinyl record sleeve. Extract the artist name and album title. Respond ONLY with valid JSON: {"artist":"...","title":"...","confidence":"high|medium|low"}'}
+        ]}]})
+      });
+      var data = await response.json();
+      var text = data.content.map(function(i){return i.text||'';}).join('');
+      var parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
+      body.innerHTML =
+        '<div class="lookup-result"><strong>'+esc(parsed.artist)+' — '+esc(parsed.title)+'</strong><span>AI confidence: '+parsed.confidence+'</span></div>'+
+        '<div class="form-row">'+
+          '<div class="form-group"><label>Artist</label><input type="text" id="ph-artist" value="'+esc(parsed.artist)+'"></div>'+
+          '<div class="form-group"><label>Title</label><input type="text" id="ph-title" value="'+esc(parsed.title)+'"></div>'+
+        '</div>'+
+        '<div class="form-row">'+
+          '<div class="form-group"><label>Country (optional)</label><input type="text" id="ph-country" placeholder="e.g. UK"></div>'+
+          '<div class="form-group"><label>Edition (optional)</label><input type="text" id="ph-edition" placeholder="e.g. Original"></div>'+
+        '</div>'+
+        '<button class="submit-btn" onclick="app.saveFromPhoto()">Add to catalogue</button>'+
+        '<p class="ai-note">Check and correct before saving.</p>';
+    } catch(e) {
+      body.innerHTML = '<div style="color:var(--label-red);font-size:13px;text-align:center;padding:1rem;">Couldn\'t read the sleeve. <button onclick="app.closePanel(\'photo-panel\');app.togglePanel(\'manual-panel\');" style="background:none;border:none;cursor:pointer;color:var(--label-red);text-decoration:underline;font-family:inherit;font-size:13px;">Enter manually →</button></div>';
+    }
+    event.target.value='';
+  }
+
+  async function saveFromPhoto() {
+    var artist  = document.getElementById('ph-artist').value.trim();
+    var title   = document.getElementById('ph-title').value.trim();
+    var country = document.getElementById('ph-country').value.trim();
+    var edition = document.getElementById('ph-edition').value.trim();
+    if (!artist||!title) { showStatus('Artist and title required.','error'); return; }
+    var ok = await addRecord(artist,title,country,edition);
+    if (ok) { showStatus('Added: '+artist+' — '+title,'success'); closePanel('photo-panel'); }
+  }
+
+  // ── Export CSV ───────────────────────────────────────────────
+
+  function exportCSV() {
+    if (!records.length) { showStatus('Nothing to export yet.','error'); return; }
+    var rows = [['Artist','Title','Country','Edition']].concat(
+      records.map(function(r){return [r.artist,r.title,r.country||'',r.edition||''];})
+    );
+    var csv = rows.map(function(r){
+      return r.map(function(c){return '"'+c.replace(/"/g,'""')+'"';}).join(',');
+    }).join('\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    a.download='vinyl_catalogue.csv'; a.click();
+  }
+
+  // ── Expose to HTML ───────────────────────────────────────────
+
+  window.app = {
+    togglePanel:     togglePanel,
+    closePanel:      closePanel,
+    addManual:       addManual,
+    saveFromBarcode: saveFromBarcode,
+    saveFromPhoto:   saveFromPhoto,
+    deleteRecord:    deleteRecord,
+    triggerPhoto:    triggerPhoto,
+    handlePhoto:     handlePhoto,
+    filterRecords:   filterRecords,
+    exportCSV:       exportCSV
+  };
+
+  init();
+}
+</script>
+</body>
+</html>
