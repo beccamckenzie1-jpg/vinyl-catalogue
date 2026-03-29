@@ -40,11 +40,11 @@
   .btn.primary:hover { background: #1a1208; }
   .btn-icon { font-size: 20px; line-height: 1; }
   .btn-label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8; }
-  .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 1.25rem; overflow: hidden; }
+  .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 1.25rem; }
   .panel-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid var(--border); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; justify-content: space-between; }
   .close-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 18px; line-height: 1; padding: 0; }
-  .panel-body { padding: 1.25rem; }
-  .form-group { margin-bottom: 1rem; position: relative; }
+  .panel-body { padding: 1.25rem; overflow: visible; }
+  .form-group { margin-bottom: 1rem; }
   .form-group label { display: block; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
   .form-group input { width: 100%; padding: 0.625rem 0.875rem; font-family: 'DM Mono', monospace; font-size: 13px; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; color: var(--ink); outline: none; }
   .form-group input:focus { border-color: rgba(26,18,8,0.4); background: #fff; }
@@ -52,30 +52,22 @@
   .form-row .form-group { flex: 1; }
   .submit-btn { width: 100%; padding: 0.75rem; margin-top: 1.25rem; font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: 0.06em; background: var(--groove); color: var(--cream); border: none; border-radius: 8px; cursor: pointer; }
   .submit-btn:hover { background: #1a1208; }
-
-  /* Autocomplete dropdown */
-  .autocomplete-list {
-    position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
-    background: var(--card-bg); border: 1px solid rgba(26,18,8,0.25);
-    border-top: none; border-radius: 0 0 6px 6px;
-    max-height: 180px; overflow-y: auto;
-    box-shadow: 0 4px 12px rgba(26,18,8,0.08);
+  .ac-wrap { position: relative; }
+  .ac-dropdown {
+    display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0; z-index: 9999;
+    background: var(--card-bg); border: 1px solid rgba(26,18,8,0.3); border-radius: 6px;
+    max-height: 200px; overflow-y: auto; box-shadow: 0 6px 20px rgba(26,18,8,0.15);
   }
-  .autocomplete-item {
-    padding: 0.625rem 0.875rem; font-size: 13px; cursor: pointer;
-    font-family: 'DM Mono', monospace; color: var(--ink);
-    border-bottom: 1px solid var(--border);
-  }
-  .autocomplete-item:last-child { border-bottom: none; }
-  .autocomplete-item:hover, .autocomplete-item.active { background: var(--warm); }
-
+  .ac-dropdown.open { display: block; }
+  .ac-item { padding: 0.7rem 0.875rem; font-size: 13px; font-family: 'DM Mono', monospace; color: var(--ink); cursor: pointer; border-bottom: 1px solid var(--border); }
+  .ac-item:last-child { border-bottom: none; }
+  .ac-item.highlighted, .ac-item:hover { background: var(--warm); }
   #scanner-wrap { position: relative; background: #000; border-radius: 8px; overflow: hidden; width: 100%; aspect-ratio: 4/3; margin-bottom: 1rem; }
   #scanner-video { width: 100%; height: 100%; object-fit: cover; display: block; }
   .scanner-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 72%; height: 28%; border: 2px solid rgba(255,255,255,0.7); border-radius: 4px; box-shadow: 0 0 0 1000px rgba(0,0,0,0.5); pointer-events: none; }
   .scanner-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--label-red); animation: scan 2s ease-in-out infinite; }
   @keyframes scan { 0%,100%{top:8%} 50%{top:88%} }
   .scanner-status { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 0.75rem; min-height: 20px; }
-
   .record-item { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--border); transition: background 0.1s; }
   .record-item:last-child { border-bottom: none; }
   .record-item:hover { background: #faf8f3; }
@@ -132,21 +124,16 @@
 
   <div class="search-bar">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#1a1208" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="#1a1208" stroke-width="1.5" stroke-linecap="round"/></svg>
-    <input type="text" id="search-input" placeholder="Search artist or title…" oninput="app.filterRecords()">
+    <input type="text" id="search-input" placeholder="Search artist or title…">
   </div>
 
   <div class="action-row">
-    <button class="btn" onclick="app.togglePanel('barcode-panel')">
-      <span class="btn-icon">📷</span><span class="btn-label">Scan barcode</span>
-    </button>
-    <button class="btn primary" onclick="app.togglePanel('manual-panel')">
-      <span class="btn-icon">✏️</span><span class="btn-label">Add manually</span>
-    </button>
+    <button class="btn" id="btn-barcode"><span class="btn-icon">📷</span><span class="btn-label">Scan barcode</span></button>
+    <button class="btn primary" id="btn-manual"><span class="btn-icon">✏️</span><span class="btn-label">Add manually</span></button>
   </div>
 
-  <!-- Barcode panel -->
   <div class="panel hidden" id="barcode-panel">
-    <div class="panel-header">Barcode scanner <button class="close-btn" onclick="app.closePanel('barcode-panel')">×</button></div>
+    <div class="panel-header">Barcode scanner <button class="close-btn" id="close-barcode">×</button></div>
     <div class="panel-body">
       <div id="scanner-status" class="scanner-status">Initialising camera…</div>
       <div id="scanner-wrap">
@@ -159,27 +146,27 @@
           <div class="form-group"><label>Country (optional)</label><input type="text" id="bc-country" placeholder="e.g. UK, US, DE"></div>
           <div class="form-group"><label>Edition (optional)</label><input type="text" id="bc-edition" placeholder="e.g. Original, Repress"></div>
         </div>
-        <button class="submit-btn" onclick="app.saveFromBarcode()">Add to catalogue</button>
+        <button class="submit-btn" id="bc-save-btn">Add to catalogue</button>
       </div>
     </div>
   </div>
 
-  <!-- Manual panel -->
-  <div class="panel hidden" id="manual-panel">
-    <div class="panel-header">Add record manually <button class="close-btn" onclick="app.closePanel('manual-panel')">×</button></div>
-    <div class="panel-body">
-      <div class="form-group" id="artist-group">
+  <div class="panel hidden" id="manual-panel" style="overflow:visible">
+    <div class="panel-header">Add record manually <button class="close-btn" id="close-manual">×</button></div>
+    <div class="panel-body" style="overflow:visible">
+      <div class="form-group">
         <label>Artist *</label>
-        <input type="text" id="m-artist" placeholder="e.g. David Bowie" autocomplete="off"
-               oninput="app.artistInput()" onkeydown="app.artistKeydown(event)" onblur="app.hideArtistDropdown()">
-        <div class="autocomplete-list hidden" id="artist-dropdown"></div>
+        <div class="ac-wrap">
+          <input type="text" id="m-artist" placeholder="e.g. David Bowie" autocomplete="off">
+          <div class="ac-dropdown" id="artist-dropdown"></div>
+        </div>
       </div>
       <div class="form-group"><label>Title *</label><input type="text" id="m-title" placeholder="e.g. Ziggy Stardust"></div>
       <div class="form-row">
         <div class="form-group"><label>Country (optional)</label><input type="text" id="m-country" placeholder="e.g. UK"></div>
         <div class="form-group"><label>Edition (optional)</label><input type="text" id="m-edition" placeholder="e.g. Original"></div>
       </div>
-      <button class="submit-btn" onclick="app.addManual()">Add to catalogue</button>
+      <button class="submit-btn" id="manual-save-btn">Add to catalogue</button>
     </div>
   </div>
 
@@ -188,9 +175,9 @@
   <div>
     <div class="section-title">
       <span id="list-label">Collection</span>
-      <button class="export-btn" onclick="app.exportCSV()">Export CSV</button>
+      <button class="export-btn" id="export-btn">Export CSV</button>
     </div>
-    <div class="panel">
+    <div class="panel" style="overflow:hidden">
       <div id="records-list">
         <div class="loading-screen"><span class="spinner"></span> Loading your collection…</div>
       </div>
@@ -202,413 +189,302 @@
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWakCy6WRWol9XiwxOe8aEAM_8LoaSxjIGa01upau9alkT2kAE-MPWPhfAHEFKttqf/exec';
 
-var records       = [];
-var barcodeData   = null;
-var codeReader    = null;
-var scanning      = false;
-var lastScanned   = null;
-var saving        = false;
-var acActiveIndex = -1;
+var records     = [];
+var barcodeData = null;
+var codeReader  = null;
+var scanning    = false;
+var lastScanned = null;
+var saving      = false;
+var acOpen      = false; // whether dropdown is currently shown
 
 function setSyncStatus(state, msg) {
-  document.getElementById('sync-dot').className = 'sync-dot' + (state ? ' ' + state : '');
+  document.getElementById('sync-dot').className = 'sync-dot'+(state?' '+state:'');
   document.getElementById('sync-label').textContent = msg;
 }
-
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
 function showStatus(msg, type) {
   var el = document.getElementById('status-area');
-  el.innerHTML = '<div class="status-msg ' + (type||'info') + '">' + esc(msg) + '</div>';
+  el.innerHTML = '<div class="status-msg '+(type||'info')+'">'+esc(msg)+'</div>';
   setTimeout(function(){ el.innerHTML=''; }, 3500);
 }
-
 async function scriptCall(params) {
-  var qs = Object.keys(params).map(function(k){
-    return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
-  }).join('&');
-  var res = await fetch(SCRIPT_URL + (qs ? '?' + qs : ''));
-  if (!res.ok) throw new Error('Request failed (' + res.status + ')');
+  var qs = Object.keys(params).map(function(k){ return encodeURIComponent(k)+'='+encodeURIComponent(params[k]); }).join('&');
+  var res = await fetch(SCRIPT_URL+(qs?'?'+qs:''));
+  if (!res.ok) throw new Error('Request failed ('+res.status+')');
   var data = await res.json();
   if (data.error) throw new Error(data.error);
   return data;
 }
 
 // ── Init ──────────────────────────────────────────────────────
-
 async function init() {
-  setSyncStatus('busy', 'Connecting to Google Sheets…');
+  setSyncStatus('busy','Connecting to Google Sheets…');
   try {
     var data = await scriptCall({});
-    var rows = data.values || [];
-    var hasHeader = rows.length > 0 && rows[0][0] && rows[0][0].toLowerCase() === 'artist';
-    var dataRows = hasHeader ? rows.slice(1) : rows;
-    if (rows.length === 0) {
-      await scriptCall({ action:'append', row: JSON.stringify(['Artist','Title','Country','Edition','Cover']) });
-    }
+    var rows = data.values||[];
+    var hasHeader = rows.length>0&&rows[0][0]&&rows[0][0].toLowerCase()==='artist';
+    var dataRows = hasHeader?rows.slice(1):rows;
+    if (rows.length===0) await scriptCall({action:'append',row:JSON.stringify(['Artist','Title','Country','Edition','Cover'])});
     records = dataRows
-      .map(function(r, i){
-        return { id:'r'+i, sheetRow:i, artist:r[0]||'', title:r[1]||'', country:r[2]||'', edition:r[3]||'', cover:r[4]||'' };
-      })
-      .filter(function(r){ return r.artist || r.title; });
-    setSyncStatus('ok', 'Synced · ' + records.length + ' records');
+      .map(function(r,i){ return {id:'r'+i,sheetRow:i,artist:r[0]||'',title:r[1]||'',country:r[2]||'',edition:r[3]||'',cover:r[4]||''}; })
+      .filter(function(r){ return r.artist||r.title; });
+    setSyncStatus('ok','Synced · '+records.length+' records');
     renderAll();
   } catch(e) {
-    setSyncStatus('err', 'Connection failed: ' + e.message);
-    document.getElementById('records-list').innerHTML =
-      '<div class="empty-state"><div class="big-disc"></div><p>Could not connect.<br><small style="font-size:11px;color:var(--label-red)">' + esc(e.message) + '</small></p></div>';
+    setSyncStatus('err','Connection failed: '+e.message);
+    document.getElementById('records-list').innerHTML='<div class="empty-state"><div class="big-disc"></div><p>Could not connect.<br><small style="font-size:11px;color:var(--label-red)">'+esc(e.message)+'</small></p></div>';
   }
 }
 
 // ── Render ────────────────────────────────────────────────────
-
-function renderAll() { updateStats(); renderList(records); }
-
-function updateStats() {
-  document.getElementById('total-count').textContent = records.length;
-  var artists = {};
-  records.forEach(function(r){ artists[r.artist.toLowerCase()] = 1; });
-  document.getElementById('artist-count').textContent = Object.keys(artists).length;
-  var countries = {};
-  records.filter(function(r){ return r.country; }).forEach(function(r){ countries[r.country]=1; });
-  document.getElementById('country-count').textContent = Object.keys(countries).length || '—';
+function renderAll(){ updateStats(); renderList(records); }
+function updateStats(){
+  document.getElementById('total-count').textContent=records.length;
+  var a={};records.forEach(function(r){a[r.artist.toLowerCase()]=1;});
+  document.getElementById('artist-count').textContent=Object.keys(a).length;
+  var c={};records.filter(function(r){return r.country;}).forEach(function(r){c[r.country]=1;});
+  document.getElementById('country-count').textContent=Object.keys(c).length||'—';
 }
-
-function renderList(list) {
-  var el = document.getElementById('records-list');
-  if (!list.length) {
-    var q = document.getElementById('search-input').value;
-    el.innerHTML = '<div class="empty-state"><div class="big-disc"></div><p>' + (q ? 'No records match your search.' : 'Your catalogue is empty.<br>Add your first record above.') + '</p></div>';
+function renderList(list){
+  var el=document.getElementById('records-list');
+  if(!list.length){
+    var q=document.getElementById('search-input').value;
+    el.innerHTML='<div class="empty-state"><div class="big-disc"></div><p>'+(q?'No records match your search.':'Your catalogue is empty.<br>Add your first record above.')+'</p></div>';
     return;
   }
-  var cls = ['c1','c2','c3','c4','c5'];
-  el.innerHTML = list.map(function(r, i){
-    var thumb = r.cover
-      ? '<div class="record-thumb"><img src="' + esc(r.cover) + '" alt="" onerror="this.parentNode.innerHTML=\'<div class=&quot;disc-fallback ' + cls[i%5] + '&quot;></div>\'"></div>'
-      : '<div class="record-thumb"><div class="disc-fallback ' + cls[i%5] + '"></div></div>';
-    return '<div class="record-item">' +
-      thumb +
-      '<div class="record-info">' +
-        '<div class="record-artist">' + esc(r.artist) + '</div>' +
-        '<div class="record-title">' + esc(r.title) + '</div>' +
-        ((r.country||r.edition) ? '<div class="record-meta">' +
-          (r.country?'<span class="tag">'+esc(r.country)+'</span>':'') +
-          (r.edition?'<span class="tag">'+esc(r.edition)+'</span>':'') +
-        '</div>' : '') +
-      '</div>' +
-      '<button class="delete-btn" onclick="app.deleteRecord(\'' + r.id + '\')">✕</button>' +
-    '</div>';
+  var cls=['c1','c2','c3','c4','c5'];
+  el.innerHTML=list.map(function(r,i){
+    var t=r.cover?'<div class="record-thumb"><img src="'+esc(r.cover)+'" alt="" onerror="this.parentNode.innerHTML=\'<div class=&quot;disc-fallback '+cls[i%5]+'&quot;></div>\'"></div>':'<div class="record-thumb"><div class="disc-fallback '+cls[i%5]+'"></div></div>';
+    return '<div class="record-item">'+t+'<div class="record-info"><div class="record-artist">'+esc(r.artist)+'</div><div class="record-title">'+esc(r.title)+'</div>'+((r.country||r.edition)?'<div class="record-meta">'+(r.country?'<span class="tag">'+esc(r.country)+'</span>':'')+(r.edition?'<span class="tag">'+esc(r.edition)+'</span>':'')+'</div>':'')+'</div><button class="delete-btn" data-id="'+r.id+'">✕</button></div>';
   }).join('');
+  el.querySelectorAll('.delete-btn').forEach(function(b){ b.addEventListener('click',function(){ deleteRecord(this.dataset.id); }); });
 }
 
-function filterRecords() {
-  var q = document.getElementById('search-input').value.toLowerCase().trim();
-  var label = document.getElementById('list-label');
-  if (!q) { label.textContent='Collection'; renderList(records); return; }
-  var f = records.filter(function(r){
-    return r.artist.toLowerCase().indexOf(q)>=0 || r.title.toLowerCase().indexOf(q)>=0;
-  });
-  label.textContent = 'Results (' + f.length + ')';
-  renderList(f);
-}
+document.getElementById('search-input').addEventListener('input',function(){
+  var q=this.value.toLowerCase().trim();
+  var lb=document.getElementById('list-label');
+  if(!q){lb.textContent='Collection';renderList(records);return;}
+  var f=records.filter(function(r){return r.artist.toLowerCase().indexOf(q)>=0||r.title.toLowerCase().indexOf(q)>=0;});
+  lb.textContent='Results ('+f.length+')';renderList(f);
+});
 
-// ── Artist autocomplete ───────────────────────────────────────
+// ── Autocomplete ──────────────────────────────────────────────
+var acInput = document.getElementById('m-artist');
+var acDrop  = document.getElementById('artist-dropdown');
 
-function getUniqueArtists() {
-  var seen = {};
-  var out = [];
+function acMatches(q){
+  var seen={},out=[];
   records.forEach(function(r){
-    var k = r.artist.toLowerCase();
-    if (r.artist && !seen[k]) { seen[k]=1; out.push(r.artist); }
+    var k=r.artist.toLowerCase();
+    if(r.artist&&!seen[k]&&k.indexOf(q.toLowerCase())===0){seen[k]=1;out.push(r.artist);}
   });
-  return out.sort(function(a,b){ return a.toLowerCase().localeCompare(b.toLowerCase()); });
+  return out.sort(function(a,b){return a.toLowerCase().localeCompare(b.toLowerCase());});
 }
 
-function artistInput() {
-  var val = document.getElementById('m-artist').value.trim().toLowerCase();
-  var dropdown = document.getElementById('artist-dropdown');
-  acActiveIndex = -1;
-  if (!val) { dropdown.classList.add('hidden'); return; }
-  var matches = getUniqueArtists().filter(function(a){ return a.toLowerCase().indexOf(val) === 0; });
-  if (!matches.length) { dropdown.classList.add('hidden'); return; }
-  dropdown.innerHTML = matches.map(function(a, i){
-    return '<div class="autocomplete-item" onmousedown="app.selectArtist(\'' + esc(a) + '\')">' + esc(a) + '</div>';
-  }).join('');
-  dropdown.classList.remove('hidden');
+function acShow(matches){
+  if(!matches.length){acHide();return;}
+  acDrop.innerHTML=matches.map(function(a){return '<div class="ac-item">'+esc(a)+'</div>';}).join('');
+  acDrop.querySelectorAll('.ac-item').forEach(function(item){
+    // touchstart + touchend for mobile, mousedown for desktop
+    // using touchend+preventDefault stops the blur from firing first on iOS
+    item.addEventListener('touchstart',function(e){e.stopPropagation();},{passive:true});
+    item.addEventListener('touchend',function(e){
+      e.preventDefault();e.stopPropagation();
+      acSelect(this.textContent);
+    });
+    item.addEventListener('mousedown',function(e){
+      e.preventDefault();
+      acSelect(this.textContent);
+    });
+  });
+  acDrop.classList.add('open');
+  acOpen=true;
 }
 
-function selectArtist(name) {
-  document.getElementById('m-artist').value = name;
-  document.getElementById('artist-dropdown').classList.add('hidden');
+function acHide(){ acDrop.classList.remove('open'); acOpen=false; }
+
+function acSelect(val){
+  acInput.value=val;
+  acHide();
   document.getElementById('m-title').focus();
 }
 
-function artistKeydown(e) {
-  var dropdown = document.getElementById('artist-dropdown');
-  var items = dropdown.querySelectorAll('.autocomplete-item');
-  if (!items.length || dropdown.classList.contains('hidden')) return;
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    acActiveIndex = Math.min(acActiveIndex + 1, items.length - 1);
-    items.forEach(function(el, i){ el.classList.toggle('active', i === acActiveIndex); });
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    acActiveIndex = Math.max(acActiveIndex - 1, 0);
-    items.forEach(function(el, i){ el.classList.toggle('active', i === acActiveIndex); });
-  } else if (e.key === 'Enter' && acActiveIndex >= 0) {
-    e.preventDefault();
-    selectArtist(items[acActiveIndex].textContent);
-  } else if (e.key === 'Escape') {
-    dropdown.classList.add('hidden');
-  }
-}
+acInput.addEventListener('input',function(){
+  var q=this.value.trim();
+  if(!q){acHide();return;}
+  acShow(acMatches(q));
+});
 
-function hideArtistDropdown() {
-  // Small delay so mousedown on item fires first
-  setTimeout(function(){ document.getElementById('artist-dropdown').classList.add('hidden'); }, 150);
-}
+acInput.addEventListener('focus',function(){
+  var q=this.value.trim();
+  if(q) acShow(acMatches(q));
+});
+
+// Only hide on blur if the dropdown isn't being interacted with
+acInput.addEventListener('blur',function(){
+  setTimeout(function(){ if(!acOpen) return; acHide(); },300);
+});
+
+// Close dropdown if user taps elsewhere on the page
+document.addEventListener('touchstart',function(e){
+  if(!acDrop.contains(e.target)&&e.target!==acInput) acHide();
+},{passive:true});
+document.addEventListener('mousedown',function(e){
+  if(!acDrop.contains(e.target)&&e.target!==acInput) acHide();
+});
+
+acInput.addEventListener('keydown',function(e){
+  var items=acDrop.querySelectorAll('.ac-item');
+  var active=acDrop.querySelector('.ac-item.highlighted');
+  var idx=active?Array.prototype.indexOf.call(items,active):-1;
+  if(e.key==='ArrowDown'){e.preventDefault();if(idx<items.length-1){if(active)active.classList.remove('highlighted');items[idx+1].classList.add('highlighted');}}
+  else if(e.key==='ArrowUp'){e.preventDefault();if(idx>0){active.classList.remove('highlighted');items[idx-1].classList.add('highlighted');}}
+  else if(e.key==='Enter'&&active){e.preventDefault();acSelect(active.textContent);}
+  else if(e.key==='Escape'){acHide();}
+});
 
 // ── Add / Delete ──────────────────────────────────────────────
-
-async function addRecord(artist, title, country, edition, cover) {
-  if (saving) return false;
-  country=country||''; edition=edition||''; cover=cover||'';
-  var dup = records.filter(function(r){
-    return r.artist.toLowerCase()===artist.toLowerCase() && r.title.toLowerCase()===title.toLowerCase();
-  })[0];
-  if (dup) { showStatus('Already in catalogue: ' + artist + ' — ' + title, 'error'); return false; }
-  saving = true;
-  setSyncStatus('busy', 'Saving…');
-  try {
-    await scriptCall({ action:'append', row: JSON.stringify([artist, title, country, edition, cover]) });
-    records.push({ id:'r'+records.length, sheetRow:records.length, artist:artist, title:title, country:country, edition:edition, cover:cover });
-    setSyncStatus('ok', 'Synced · ' + records.length + ' records');
-    renderAll(); filterRecords();
-    saving = false;
-    return true;
-  } catch(e) {
-    saving = false;
-    setSyncStatus('err', 'Save failed: ' + e.message);
-    showStatus('Could not save: ' + e.message, 'error');
-    return false;
-  }
+async function addRecord(artist,title,country,edition,cover){
+  if(saving)return false;
+  country=country||'';edition=edition||'';cover=cover||'';
+  var dup=records.filter(function(r){return r.artist.toLowerCase()===artist.toLowerCase()&&r.title.toLowerCase()===title.toLowerCase();})[0];
+  if(dup){showStatus('Already in catalogue: '+artist+' — '+title,'error');return false;}
+  saving=true;setSyncStatus('busy','Saving…');
+  try{
+    await scriptCall({action:'append',row:JSON.stringify([artist,title,country,edition,cover])});
+    records.push({id:'r'+records.length,sheetRow:records.length,artist:artist,title:title,country:country,edition:edition,cover:cover});
+    setSyncStatus('ok','Synced · '+records.length+' records');
+    renderAll();saving=false;return true;
+  }catch(e){saving=false;setSyncStatus('err','Save failed: '+e.message);showStatus('Could not save: '+e.message,'error');return false;}
 }
 
-async function deleteRecord(id) {
-  var idx=-1;
-  records.forEach(function(r,i){ if(r.id===id) idx=i; });
-  if (idx===-1) return;
-  var rec = records[idx];
-  if (!confirm('Remove "' + rec.artist + ' — ' + rec.title + '"?')) return;
-  setSyncStatus('busy', 'Removing…');
-  try {
-    await scriptCall({ action:'delete', rowIndex: rec.sheetRow });
-    records.splice(idx, 1);
-    records.forEach(function(r,i){ r.id='r'+i; r.sheetRow=i; });
-    setSyncStatus('ok', 'Synced · ' + records.length + ' records');
-    renderAll(); filterRecords();
-  } catch(e) {
-    setSyncStatus('err', 'Delete failed: ' + e.message);
-    showStatus('Could not remove — check connection.', 'error');
-  }
+async function deleteRecord(id){
+  var idx=-1;records.forEach(function(r,i){if(r.id===id)idx=i;});
+  if(idx===-1)return;
+  var rec=records[idx];
+  if(!confirm('Remove "'+rec.artist+' — '+rec.title+'"?'))return;
+  setSyncStatus('busy','Removing…');
+  try{
+    await scriptCall({action:'delete',rowIndex:rec.sheetRow});
+    records.splice(idx,1);records.forEach(function(r,i){r.id='r'+i;r.sheetRow=i;});
+    setSyncStatus('ok','Synced · '+records.length+' records');renderAll();
+  }catch(e){setSyncStatus('err','Delete failed: '+e.message);showStatus('Could not remove — check connection.','error');}
 }
 
-async function addManual() {
-  var artist  = document.getElementById('m-artist').value.trim();
-  var title   = document.getElementById('m-title').value.trim();
-  var country = document.getElementById('m-country').value.trim();
-  var edition = document.getElementById('m-edition').value.trim();
-  if (!artist||!title) { showStatus('Artist and title are required.','error'); return; }
-  var ok = await addRecord(artist, title, country, edition, '');
-  if (ok) {
-    showStatus('Added: ' + artist + ' — ' + title, 'success');
-    ['m-artist','m-title','m-country','m-edition'].forEach(function(id){ document.getElementById(id).value=''; });
-    document.getElementById('artist-dropdown').classList.add('hidden');
-    closePanel('manual-panel');
+document.getElementById('manual-save-btn').addEventListener('click',async function(){
+  var artist=document.getElementById('m-artist').value.trim();
+  var title=document.getElementById('m-title').value.trim();
+  var country=document.getElementById('m-country').value.trim();
+  var edition=document.getElementById('m-edition').value.trim();
+  if(!artist||!title){showStatus('Artist and title are required.','error');return;}
+  var ok=await addRecord(artist,title,country,edition,'');
+  if(ok){
+    showStatus('Added: '+artist+' — '+title,'success');
+    ['m-artist','m-title','m-country','m-edition'].forEach(function(id){document.getElementById(id).value='';});
+    acHide();closePanel('manual-panel');
   }
-}
+});
 
 // ── Panels ────────────────────────────────────────────────────
-
-function togglePanel(id) {
-  var panel = document.getElementById(id);
-  var isHidden = panel.classList.contains('hidden');
-  ['barcode-panel','manual-panel'].forEach(function(p){ document.getElementById(p).classList.add('hidden'); });
-  if (isHidden) {
-    panel.classList.remove('hidden');
-    if (id==='barcode-panel') startScanner();
-  } else {
-    if (id==='barcode-panel') stopScanner();
-  }
+function togglePanel(id){
+  var panel=document.getElementById(id);
+  var isHidden=panel.classList.contains('hidden');
+  ['barcode-panel','manual-panel'].forEach(function(p){document.getElementById(p).classList.add('hidden');});
+  if(isHidden){panel.classList.remove('hidden');if(id==='barcode-panel')startScanner();}
+  else{if(id==='barcode-panel')stopScanner();}
 }
-
-function closePanel(id) {
+function closePanel(id){
   document.getElementById(id).classList.add('hidden');
-  if (id==='barcode-panel') stopScanner();
+  if(id==='barcode-panel')stopScanner();
 }
+document.getElementById('btn-barcode').addEventListener('click',function(){togglePanel('barcode-panel');});
+document.getElementById('btn-manual').addEventListener('click',function(){togglePanel('manual-panel');});
+document.getElementById('close-barcode').addEventListener('click',function(){closePanel('barcode-panel');});
+document.getElementById('close-manual').addEventListener('click',function(){closePanel('manual-panel');});
 
-// ── Barcode scanner ───────────────────────────────────────────
-
-function startScanner() {
-  scanning    = true;
-  lastScanned = null;
-  barcodeData = null;
+// ── Scanner ───────────────────────────────────────────────────
+function startScanner(){
+  scanning=true;lastScanned=null;barcodeData=null;
   document.getElementById('barcode-result').classList.add('hidden');
   document.getElementById('barcode-form').classList.add('hidden');
-  document.getElementById('scanner-status').textContent = 'Requesting camera…';
-
-  try {
-    codeReader = new ZXing.BrowserMultiFormatReader();
-    codeReader.listVideoInputDevices().then(function(devices) {
+  document.getElementById('scanner-status').textContent='Requesting camera…';
+  try{
+    codeReader=new ZXing.BrowserMultiFormatReader();
+    codeReader.listVideoInputDevices().then(function(devices){
       var deviceId;
-      devices.forEach(function(d) {
-        var lbl = d.label.toLowerCase();
-        if (lbl.indexOf('back') >= 0 || lbl.indexOf('rear') >= 0 || lbl.indexOf('environment') >= 0) {
-          deviceId = d.deviceId;
-        }
-      });
-      if (!deviceId && devices.length > 0) deviceId = devices[devices.length - 1].deviceId;
-
-      // Request camera with continuous autofocus hints
-      var constraints = {
-        video: {
-          deviceId: deviceId ? { exact: deviceId } : undefined,
-          facingMode: deviceId ? undefined : { ideal: 'environment' },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          focusMode: { ideal: 'continuous' },
-          advanced: [{ focusMode: 'continuous' }]
-        }
-      };
-
-      navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
-        var video = document.getElementById('scanner-video');
-        video.srcObject = stream;
-
-        // Apply continuous autofocus via ImageCapture API if available
-        var track = stream.getVideoTracks()[0];
-        if (track && track.applyConstraints) {
-          track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(function(){});
-        }
-
-        video.play().then(function() {
-          document.getElementById('scanner-status').textContent = 'Point at the barcode…';
-          codeReader.decodeFromStream(stream, video, function(result, err) {
-            if (!result || !scanning) return;
-            var code = result.getText();
-            if (code === lastScanned) return;
-            lastScanned = code;
-            scanning = false;
-            codeReader.reset();
-            lookupBarcode(code);
+      devices.forEach(function(d){var l=d.label.toLowerCase();if(l.indexOf('back')>=0||l.indexOf('rear')>=0||l.indexOf('environment')>=0)deviceId=d.deviceId;});
+      if(!deviceId&&devices.length>0)deviceId=devices[devices.length-1].deviceId;
+      navigator.mediaDevices.getUserMedia({video:{deviceId:deviceId?{exact:deviceId}:undefined,facingMode:deviceId?undefined:{ideal:'environment'},width:{ideal:1280},height:{ideal:720},advanced:[{focusMode:'continuous'}]}}).then(function(stream){
+        var video=document.getElementById('scanner-video');
+        video.srcObject=stream;
+        var track=stream.getVideoTracks()[0];
+        if(track&&track.applyConstraints)track.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(function(){});
+        video.play().then(function(){
+          document.getElementById('scanner-status').textContent='Point at the barcode…';
+          codeReader.decodeFromStream(stream,video,function(result){
+            if(!result||!scanning)return;
+            var code=result.getText();
+            if(code===lastScanned)return;
+            lastScanned=code;scanning=false;codeReader.reset();lookupBarcode(code);
           });
         });
-      }).catch(function(err) {
-        document.getElementById('scanner-status').textContent = 'Camera error: ' + (err.message||'permission denied');
-        scanning = false;
-      });
-
-    }).catch(function(err) {
-      document.getElementById('scanner-status').textContent = 'Camera error: ' + (err.message||'permission denied');
-      scanning = false;
-    });
-  } catch(err) {
-    document.getElementById('scanner-status').textContent = 'Scanner unavailable — enter manually.';
-    scanning = false;
-  }
+      }).catch(function(err){document.getElementById('scanner-status').textContent='Camera error: '+(err.message||'permission denied');scanning=false;});
+    }).catch(function(err){document.getElementById('scanner-status').textContent='Camera error: '+(err.message||'permission denied');scanning=false;});
+  }catch(err){document.getElementById('scanner-status').textContent='Scanner unavailable — enter manually.';scanning=false;}
 }
 
-function stopScanner() {
-  scanning = false;
-  lastScanned = null;
-  if (codeReader) { try { codeReader.reset(); } catch(e){} codeReader = null; }
-  var video = document.getElementById('scanner-video');
-  if (video && video.srcObject) {
-    video.srcObject.getTracks().forEach(function(t){ t.stop(); });
-    video.srcObject = null;
-  }
+function stopScanner(){
+  scanning=false;lastScanned=null;
+  if(codeReader){try{codeReader.reset();}catch(e){}codeReader=null;}
+  var v=document.getElementById('scanner-video');
+  if(v&&v.srcObject){v.srcObject.getTracks().forEach(function(t){t.stop();});v.srcObject=null;}
 }
 
-async function lookupBarcode(code) {
-  var statusEl = document.getElementById('scanner-status');
-  statusEl.innerHTML = '<span class="spinner"></span> Looking up ' + code + '…';
-  try {
-    var res = await fetch('https://api.discogs.com/database/search?barcode=' + code, {
-      headers: { 'User-Agent': 'VinylCatalogue/1.0' }
-    });
-    var data = await res.json();
-    if (data.results && data.results.length > 0) {
-      var top    = data.results[0];
-      var parts  = (top.title||'').split(' - ');
-      var artist = parts[0]||'';
-      var title  = parts.slice(1).join(' - ') || top.title || '';
-      var cover  = (top.cover_image && top.cover_image.indexOf('spacer') === -1) ? top.cover_image : '';
-      barcodeData = { artist:artist, title:title, cover:cover };
-      var resultEl = document.getElementById('barcode-result');
-      resultEl.className = 'lookup-result';
-      resultEl.innerHTML =
-        (cover ? '<img class="lookup-cover" src="' + esc(cover) + '" alt="">' : '') +
-        '<div class="lookup-text"><strong>' + esc(artist) + ' — ' + esc(title) + '</strong><span>via Discogs · ' + code + '</span></div>';
-      resultEl.classList.remove('hidden');
+async function lookupBarcode(code){
+  var s=document.getElementById('scanner-status');
+  s.innerHTML='<span class="spinner"></span> Looking up '+code+'…';
+  try{
+    var res=await fetch('https://api.discogs.com/database/search?barcode='+code,{headers:{'User-Agent':'VinylCatalogue/1.0'}});
+    var data=await res.json();
+    if(data.results&&data.results.length>0){
+      var top=data.results[0];
+      var parts=(top.title||'').split(' - ');
+      var artist=parts[0]||'';
+      var title=parts.slice(1).join(' - ')||top.title||'';
+      var cover=(top.cover_image&&top.cover_image.indexOf('spacer')===-1)?top.cover_image:'';
+      barcodeData={artist:artist,title:title,cover:cover};
+      var re=document.getElementById('barcode-result');
+      re.className='lookup-result';
+      re.innerHTML=(cover?'<img class="lookup-cover" src="'+esc(cover)+'" alt="">':'')+'<div class="lookup-text"><strong>'+esc(artist)+' — '+esc(title)+'</strong><span>via Discogs · '+code+'</span></div>';
+      re.classList.remove('hidden');
       document.getElementById('barcode-form').classList.remove('hidden');
-      statusEl.textContent = 'Found! Add optional details below.';
-    } else {
-      statusEl.textContent = 'Barcode not found — enter manually.';
-      setTimeout(function(){ closePanel('barcode-panel'); togglePanel('manual-panel'); }, 1200);
+      s.textContent='Found! Add optional details below.';
+    }else{
+      s.textContent='Barcode not found — enter manually.';
+      setTimeout(function(){closePanel('barcode-panel');togglePanel('manual-panel');},1200);
     }
-  } catch(e) {
-    statusEl.textContent = 'Lookup failed — enter manually.';
-    setTimeout(function(){ closePanel('barcode-panel'); togglePanel('manual-panel'); }, 1200);
+  }catch(e){
+    s.textContent='Lookup failed — enter manually.';
+    setTimeout(function(){closePanel('barcode-panel');togglePanel('manual-panel');},1200);
   }
 }
 
-async function saveFromBarcode() {
-  if (!barcodeData || typeof barcodeData !== 'object') return;
-  var country = document.getElementById('bc-country').value.trim();
-  var edition = document.getElementById('bc-edition').value.trim();
-  var ok = await addRecord(barcodeData.artist, barcodeData.title, country, edition, barcodeData.cover);
-  if (ok) {
-    showStatus('Added: ' + barcodeData.artist + ' — ' + barcodeData.title, 'success');
-    document.getElementById('bc-country').value='';
-    document.getElementById('bc-edition').value='';
-    barcodeData = null;
-    closePanel('barcode-panel');
-  }
-}
+document.getElementById('bc-save-btn').addEventListener('click',async function(){
+  if(!barcodeData||typeof barcodeData!=='object')return;
+  var country=document.getElementById('bc-country').value.trim();
+  var edition=document.getElementById('bc-edition').value.trim();
+  var ok=await addRecord(barcodeData.artist,barcodeData.title,country,edition,barcodeData.cover);
+  if(ok){showStatus('Added: '+barcodeData.artist+' — '+barcodeData.title,'success');document.getElementById('bc-country').value='';document.getElementById('bc-edition').value='';barcodeData=null;closePanel('barcode-panel');}
+});
 
-// ── Export CSV ────────────────────────────────────────────────
-
-function exportCSV() {
-  if (!records.length) { showStatus('Nothing to export yet.','error'); return; }
-  var rows = [['Artist','Title','Country','Edition']].concat(
-    records.map(function(r){ return [r.artist, r.title, r.country||'', r.edition||'']; })
-  );
-  var csv = rows.map(function(r){
-    return r.map(function(c){ return '"' + c.replace(/"/g,'""') + '"'; }).join(',');
-  }).join('\n');
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download = 'vinyl_catalogue.csv';
-  a.click();
-}
-
-// ── Expose to HTML ────────────────────────────────────────────
-
-window.app = {
-  togglePanel:        togglePanel,
-  closePanel:         closePanel,
-  addManual:          addManual,
-  saveFromBarcode:    saveFromBarcode,
-  deleteRecord:       deleteRecord,
-  filterRecords:      filterRecords,
-  exportCSV:          exportCSV,
-  artistInput:        artistInput,
-  artistKeydown:      artistKeydown,
-  selectArtist:       selectArtist,
-  hideArtistDropdown: hideArtistDropdown
-};
+document.getElementById('export-btn').addEventListener('click',function(){
+  if(!records.length){showStatus('Nothing to export yet.','error');return;}
+  var rows=[['Artist','Title','Country','Edition']].concat(records.map(function(r){return[r.artist,r.title,r.country||'',r.edition||''];}));
+  var csv=rows.map(function(r){return r.map(function(c){return'"'+c.replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='vinyl_catalogue.csv';a.click();
+});
 
 init();
 </script>
