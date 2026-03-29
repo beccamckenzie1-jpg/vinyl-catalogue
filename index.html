@@ -58,18 +58,26 @@
   .scanner-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--label-red); animation: scan 2s ease-in-out infinite; }
   @keyframes scan { 0%,100%{top:8%} 50%{top:88%} }
   .scanner-status { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 0.75rem; min-height: 20px; }
-  .record-item { display: flex; align-items: flex-start; gap: 1rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  .record-item { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--border); transition: background 0.1s; }
   .record-item:last-child { border-bottom: none; }
   .record-item:hover { background: #faf8f3; }
-  .record-disc { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
-  .record-disc::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--cream); }
-  .record-disc.c1{background:#8B2635}.record-disc.c2{background:#1a3a5c}.record-disc.c3{background:#2d5a27}.record-disc.c4{background:#5a3a1a}.record-disc.c5{background:#3a1a5a}
+  .record-thumb {
+    width: 48px; height: 48px; border-radius: 4px; flex-shrink: 0;
+    background: var(--warm); overflow: hidden; display: flex; align-items: center; justify-content: center;
+  }
+  .record-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .record-thumb .disc-fallback {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .record-thumb .disc-fallback::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--cream); }
+  .disc-fallback.c1{background:#8B2635}.disc-fallback.c2{background:#1a3a5c}.disc-fallback.c3{background:#2d5a27}.disc-fallback.c4{background:#5a3a1a}.disc-fallback.c5{background:#3a1a5a}
   .record-info { flex: 1; min-width: 0; }
   .record-artist { font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--groove); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .record-title { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .record-meta { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
   .tag { font-size: 10px; padding: 2px 7px; border-radius: 3px; background: var(--warm); color: var(--muted); }
-  .delete-btn { background: none; border: none; cursor: pointer; color: var(--muted); opacity: 0; transition: opacity 0.15s; padding: 4px; font-size: 14px; flex-shrink: 0; align-self: center; }
+  .delete-btn { background: none; border: none; cursor: pointer; color: var(--muted); opacity: 0; transition: opacity 0.15s; padding: 4px; font-size: 14px; flex-shrink: 0; }
   .record-item:hover .delete-btn { opacity: 1; }
   .delete-btn:hover { color: var(--label-red); }
   .empty-state { padding: 3rem 1.5rem; text-align: center; }
@@ -79,10 +87,11 @@
   .status-msg { font-size: 12px; padding: 0.625rem 1rem; border-radius: 6px; margin-bottom: 1rem; text-align: center; }
   .status-msg.success { background: #e8f5e9; color: #2e7d32; }
   .status-msg.error { background: #fdecea; color: #c62828; }
-  .status-msg.info { background: #e8f0fe; color: #1a4abc; }
-  .lookup-result { background: var(--warm); border-radius: 6px; padding: 0.875rem 1rem; margin-bottom: 1rem; font-size: 13px; }
-  .lookup-result strong { display: block; font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--groove); }
-  .lookup-result span { color: var(--muted); font-size: 12px; }
+  .lookup-result { background: var(--warm); border-radius: 6px; padding: 0.875rem 1rem; margin-bottom: 1rem; font-size: 13px; display: flex; gap: 12px; align-items: center; }
+  .lookup-cover { width: 52px; height: 52px; border-radius: 4px; object-fit: cover; flex-shrink: 0; background: var(--border); }
+  .lookup-cover.hidden { display: none; }
+  .lookup-text strong { display: block; font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--groove); }
+  .lookup-text span { color: var(--muted); font-size: 12px; }
   .section-title { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between; }
   .export-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; color: var(--muted); }
   .export-btn:hover { background: var(--warm); color: var(--ink); }
@@ -179,6 +188,8 @@ var records     = [];
 var barcodeData = null;
 var codeReader  = null;
 var scanning    = false;
+var lastScanned = null;   // debounce: track last scanned code
+var saving      = false;  // guard against double-saves
 
 function setSyncStatus(state, msg) {
   document.getElementById('sync-dot').className = 'sync-dot' + (state ? ' ' + state : '');
@@ -206,6 +217,8 @@ async function scriptCall(params) {
   return data;
 }
 
+// ── Init ──────────────────────────────────────────────────────
+
 async function init() {
   setSyncStatus('busy', 'Connecting to Google Sheets…');
   try {
@@ -214,10 +227,12 @@ async function init() {
     var hasHeader = rows.length > 0 && rows[0][0] && rows[0][0].toLowerCase() === 'artist';
     var dataRows = hasHeader ? rows.slice(1) : rows;
     if (rows.length === 0) {
-      await scriptCall({ action:'append', row: JSON.stringify(['Artist','Title','Country','Edition']) });
+      await scriptCall({ action:'append', row: JSON.stringify(['Artist','Title','Country','Edition','Cover']) });
     }
     records = dataRows
-      .map(function(r, i){ return { id:'r'+i, sheetRow:i, artist:r[0]||'', title:r[1]||'', country:r[2]||'', edition:r[3]||'' }; })
+      .map(function(r, i){
+        return { id:'r'+i, sheetRow:i, artist:r[0]||'', title:r[1]||'', country:r[2]||'', edition:r[3]||'', cover:r[4]||'' };
+      })
       .filter(function(r){ return r.artist || r.title; });
     setSyncStatus('ok', 'Synced · ' + records.length + ' records');
     renderAll();
@@ -227,6 +242,8 @@ async function init() {
       '<div class="empty-state"><div class="big-disc"></div><p>Could not connect.<br><small style="font-size:11px;color:var(--label-red)">' + esc(e.message) + '</small></p></div>';
   }
 }
+
+// ── Render ────────────────────────────────────────────────────
 
 function renderAll() { updateStats(); renderList(records); }
 
@@ -248,9 +265,12 @@ function renderList(list) {
     return;
   }
   var cls = ['c1','c2','c3','c4','c5'];
-  el.innerHTML = list.map(function(r,i){
+  el.innerHTML = list.map(function(r, i){
+    var thumb = r.cover
+      ? '<div class="record-thumb"><img src="' + esc(r.cover) + '" alt="" onerror="this.parentNode.innerHTML=\'<div class=disc-fallback ' + cls[i%5] + '></div>\'"></div>'
+      : '<div class="record-thumb"><div class="disc-fallback ' + cls[i%5] + '"></div></div>';
     return '<div class="record-item">' +
-      '<div class="record-disc ' + cls[i%5] + '"></div>' +
+      thumb +
       '<div class="record-info">' +
         '<div class="record-artist">' + esc(r.artist) + '</div>' +
         '<div class="record-title">' + esc(r.title) + '</div>' +
@@ -275,20 +295,26 @@ function filterRecords() {
   renderList(f);
 }
 
-async function addRecord(artist, title, country, edition) {
-  country=country||''; edition=edition||'';
+// ── Add / Delete ──────────────────────────────────────────────
+
+async function addRecord(artist, title, country, edition, cover) {
+  if (saving) return false; // hard guard against double-fires
+  country=country||''; edition=edition||''; cover=cover||'';
   var dup = records.filter(function(r){
     return r.artist.toLowerCase()===artist.toLowerCase() && r.title.toLowerCase()===title.toLowerCase();
   })[0];
   if (dup) { showStatus('Already in catalogue: ' + artist + ' — ' + title, 'error'); return false; }
+  saving = true;
   setSyncStatus('busy', 'Saving…');
   try {
-    await scriptCall({ action:'append', row: JSON.stringify([artist, title, country, edition]) });
-    records.push({ id:'r'+records.length, sheetRow:records.length, artist:artist, title:title, country:country, edition:edition });
+    await scriptCall({ action:'append', row: JSON.stringify([artist, title, country, edition, cover]) });
+    records.push({ id:'r'+records.length, sheetRow:records.length, artist:artist, title:title, country:country, edition:edition, cover:cover });
     setSyncStatus('ok', 'Synced · ' + records.length + ' records');
     renderAll(); filterRecords();
+    saving = false;
     return true;
   } catch(e) {
+    saving = false;
     setSyncStatus('err', 'Save failed: ' + e.message);
     showStatus('Could not save: ' + e.message, 'error');
     return false;
@@ -320,13 +346,15 @@ async function addManual() {
   var country = document.getElementById('m-country').value.trim();
   var edition = document.getElementById('m-edition').value.trim();
   if (!artist||!title) { showStatus('Artist and title are required.','error'); return; }
-  var ok = await addRecord(artist, title, country, edition);
+  var ok = await addRecord(artist, title, country, edition, '');
   if (ok) {
     showStatus('Added: ' + artist + ' — ' + title, 'success');
     ['m-artist','m-title','m-country','m-edition'].forEach(function(id){ document.getElementById(id).value=''; });
     closePanel('manual-panel');
   }
 }
+
+// ── Panels ────────────────────────────────────────────────────
 
 function togglePanel(id) {
   var panel = document.getElementById(id);
@@ -345,8 +373,11 @@ function closePanel(id) {
   if (id==='barcode-panel') stopScanner();
 }
 
+// ── Barcode scanner ───────────────────────────────────────────
+
 function startScanner() {
-  scanning = true;
+  scanning    = true;
+  lastScanned = null;
   barcodeData = null;
   document.getElementById('barcode-result').classList.add('hidden');
   document.getElementById('barcode-form').classList.add('hidden');
@@ -355,28 +386,28 @@ function startScanner() {
   try {
     codeReader = new ZXing.BrowserMultiFormatReader();
     codeReader.listVideoInputDevices().then(function(devices) {
-      // prefer back camera
-      var deviceId = undefined;
+      var deviceId;
       devices.forEach(function(d) {
-        if (d.label.toLowerCase().indexOf('back') >= 0 ||
-            d.label.toLowerCase().indexOf('rear') >= 0 ||
-            d.label.toLowerCase().indexOf('environment') >= 0) {
+        var lbl = d.label.toLowerCase();
+        if (lbl.indexOf('back') >= 0 || lbl.indexOf('rear') >= 0 || lbl.indexOf('environment') >= 0) {
           deviceId = d.deviceId;
         }
       });
       if (!deviceId && devices.length > 0) deviceId = devices[devices.length - 1].deviceId;
-
       document.getElementById('scanner-status').textContent = 'Point at the barcode…';
 
       codeReader.decodeFromVideoDevice(deviceId, 'scanner-video', function(result, err) {
-        if (result && scanning) {
-          scanning = false;
-          codeReader.reset();
-          lookupBarcode(result.getText());
-        }
+        if (!result || !scanning) return;
+        var code = result.getText();
+        // Debounce: ignore if same code fired within 2 seconds
+        if (code === lastScanned) return;
+        lastScanned = code;
+        scanning = false;
+        codeReader.reset();
+        lookupBarcode(code);
       });
     }).catch(function(err) {
-      document.getElementById('scanner-status').textContent = 'Camera error: ' + (err.message || 'permission denied');
+      document.getElementById('scanner-status').textContent = 'Camera error: ' + (err.message||'permission denied');
       scanning = false;
     });
   } catch(err) {
@@ -387,21 +418,32 @@ function startScanner() {
 
 function stopScanner() {
   scanning = false;
-  if (codeReader) { try { codeReader.reset(); } catch(e) {} codeReader = null; }
+  lastScanned = null;
+  if (codeReader) { try { codeReader.reset(); } catch(e){} codeReader = null; }
 }
 
 async function lookupBarcode(code) {
   var statusEl = document.getElementById('scanner-status');
   statusEl.innerHTML = '<span class="spinner"></span> Looking up ' + code + '…';
   try {
-    var res = await fetch('https://api.discogs.com/database/search?barcode='+code, {headers:{'User-Agent':'VinylCatalogue/1.0'}});
+    var res = await fetch('https://api.discogs.com/database/search?barcode=' + code, {
+      headers: { 'User-Agent': 'VinylCatalogue/1.0' }
+    });
     var data = await res.json();
     if (data.results && data.results.length > 0) {
-      var parts = (data.results[0].title||'').split(' - ');
-      barcodeData = { artist:parts[0]||'', title:parts.slice(1).join(' - ')||data.results[0].title||'' };
+      var top    = data.results[0];
+      var parts  = (top.title||'').split(' - ');
+      var artist = parts[0]||'';
+      var title  = parts.slice(1).join(' - ') || top.title || '';
+      var cover  = (top.cover_image && top.cover_image.indexOf('spacer') === -1) ? top.cover_image : '';
+
+      barcodeData = { artist:artist, title:title, cover:cover };
+
       var resultEl = document.getElementById('barcode-result');
       resultEl.className = 'lookup-result';
-      resultEl.innerHTML = '<strong>'+esc(barcodeData.artist)+' — '+esc(barcodeData.title)+'</strong><span>via Discogs · '+code+'</span>';
+      resultEl.innerHTML =
+        (cover ? '<img class="lookup-cover" src="' + esc(cover) + '" alt="">' : '') +
+        '<div class="lookup-text"><strong>' + esc(artist) + ' — ' + esc(title) + '</strong><span>via Discogs · ' + code + '</span></div>';
       resultEl.classList.remove('hidden');
       document.getElementById('barcode-form').classList.remove('hidden');
       statusEl.textContent = 'Found! Add optional details below.';
@@ -416,30 +458,36 @@ async function lookupBarcode(code) {
 }
 
 async function saveFromBarcode() {
-  if (!barcodeData||typeof barcodeData!=='object') return;
+  if (!barcodeData || typeof barcodeData !== 'object') return;
   var country = document.getElementById('bc-country').value.trim();
   var edition = document.getElementById('bc-edition').value.trim();
-  var ok = await addRecord(barcodeData.artist, barcodeData.title, country, edition);
+  var ok = await addRecord(barcodeData.artist, barcodeData.title, country, edition, barcodeData.cover);
   if (ok) {
-    showStatus('Added: '+barcodeData.artist+' — '+barcodeData.title, 'success');
+    showStatus('Added: ' + barcodeData.artist + ' — ' + barcodeData.title, 'success');
     document.getElementById('bc-country').value='';
     document.getElementById('bc-edition').value='';
-    barcodeData=null; closePanel('barcode-panel');
+    barcodeData = null;
+    closePanel('barcode-panel');
   }
 }
+
+// ── Export CSV ────────────────────────────────────────────────
 
 function exportCSV() {
   if (!records.length) { showStatus('Nothing to export yet.','error'); return; }
   var rows = [['Artist','Title','Country','Edition']].concat(
-    records.map(function(r){return [r.artist,r.title,r.country||'',r.edition||''];})
+    records.map(function(r){ return [r.artist, r.title, r.country||'', r.edition||'']; })
   );
   var csv = rows.map(function(r){
-    return r.map(function(c){return '"'+c.replace(/"/g,'""')+'"';}).join(',');
+    return r.map(function(c){ return '"' + c.replace(/"/g,'""') + '"'; }).join(',');
   }).join('\n');
   var a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download='vinyl_catalogue.csv'; a.click();
+  a.download = 'vinyl_catalogue.csv';
+  a.click();
 }
+
+// ── Expose to HTML ────────────────────────────────────────────
 
 window.app = {
   togglePanel:     togglePanel,
@@ -455,4 +503,3 @@ init();
 </script>
 </body>
 </html>
-
