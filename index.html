@@ -78,12 +78,14 @@
   .sort-btn.active { background: var(--groove); color: var(--cream); border-color: var(--groove); }
   .export-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; color: var(--muted); }
   .export-btn:hover { background: var(--warm); color: var(--ink); }
-  .record-item { display: flex; align-items: flex-start; gap: 1rem; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  .record-item { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--border); transition: background 0.1s; }
   .record-item:last-child { border-bottom: none; }
   .record-item:hover { background: #faf8f3; }
-  .disc-icon { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
-  .disc-icon::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--cream); }
-  .disc-icon.c1{background:#8B2635}.disc-icon.c2{background:#1a3a5c}.disc-icon.c3{background:#2d5a27}.disc-icon.c4{background:#5a3a1a}.disc-icon.c5{background:#3a1a5a}
+  .record-thumb { width: 48px; height: 48px; border-radius: 4px; flex-shrink: 0; background: var(--warm); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .record-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .disc-fallback { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .disc-fallback::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--cream); }
+  .disc-fallback.c1{background:#8B2635}.disc-fallback.c2{background:#1a3a5c}.disc-fallback.c3{background:#2d5a27}.disc-fallback.c4{background:#5a3a1a}.disc-fallback.c5{background:#3a1a5a}
   .record-info { flex: 1; min-width: 0; }
   .record-artist { font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--groove); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .record-title { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -104,19 +106,18 @@
   .lookup-cover { width: 52px; height: 52px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
   .lookup-text strong { display: block; font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--groove); }
   .lookup-text span { color: var(--muted); font-size: 12px; }
-
-  /* Pagination */
   .pagination { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 1rem 1.25rem; border-top: 1px solid var(--border); flex-wrap: wrap; }
   .page-btn { font-family: 'DM Mono', monospace; font-size: 12px; min-width: 32px; height: 32px; padding: 0 6px; border-radius: 6px; border: 1px solid var(--border); background: none; cursor: pointer; color: var(--muted); display: flex; align-items: center; justify-content: center; }
   .page-btn:hover { background: var(--warm); color: var(--ink); }
-  .page-btn.active { background: var(--groove); color: var(--cream); border-color: var(--groove); font-weight: 500; }
+  .page-btn.active { background: var(--groove); color: var(--cream); border-color: var(--groove); }
   .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-  .page-info { font-size: 11px; color: var(--muted); padding: 0 8px; }
-
+  .page-info { font-size: 11px; color: var(--muted); padding: 0 4px; }
   .hidden { display: none !important; }
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(26,18,8,0.1); border-top-color: var(--ink); border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-screen { padding: 3rem 1.5rem; text-align: center; color: var(--muted); font-size: 13px; }
+  .import-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; color: var(--muted); }
+  .import-btn:hover { background: var(--warm); color: var(--ink); }
 </style>
 </head>
 <body>
@@ -202,6 +203,7 @@
       <span class="sort-bar-label" id="list-label">Collection</span>
       <button class="sort-btn active" id="sort-alpha">A–Z</button>
       <button class="sort-btn" id="sort-recent">Recent</button>
+      <button class="import-btn" id="import-btn" title="Import from Google Sheets">Import</button>
       <button class="export-btn" id="export-btn">Export CSV</button>
     </div>
     <div class="panel" style="overflow:hidden">
@@ -215,20 +217,28 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWakCy6WRWol9XiwxOe8aEAM_8LoaSxjIGa01upau9alkT2kAE-MPWPhfAHEFKttqf/exec';
-const PAGE_SIZE  = 20;
+// ── Supabase config ───────────────────────────────────────────
+const SB_URL = 'https://rakigamlbzjgupqavpdq.supabase.co';
+const SB_KEY = 'sb_publishable_nCQzN8Ffcqb9-tLdPaNlVw_2dKGIEDk';
+const HEADERS = { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
 
-var records     = [];
-var barcodeData = null;
-var codeReader  = null;
-var scanning    = false;
-var lastScanned = null;
-var saving      = false;
-var sortMode    = 'alpha';
-var currentPage = 1;
-var acOpen      = false;
+// Google Sheets Apps Script URL for import
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzWakCy6WRWol9XiwxOe8aEAM_8LoaSxjIGa01upau9alkT2kAE-MPWPhfAHEFKttqf/exec';
+
+const PAGE_SIZE = 20;
+
+var records      = [];
+var barcodeData  = null;
+var codeReader   = null;
+var scanning     = false;
+var lastScanned  = null;
+var saving       = false;
+var sortMode     = 'alpha';
+var currentPage  = 1;
 var filteredList = [];
+var acOpen       = false;
 
+// ── Helpers ───────────────────────────────────────────────────
 function setSyncStatus(state, msg) {
   document.getElementById('sync-dot').className = 'sync-dot'+(state?' '+state:'');
   document.getElementById('sync-label').textContent = msg;
@@ -237,84 +247,91 @@ function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 function showStatus(msg, type) {
   var el = document.getElementById('status-area');
   el.innerHTML = '<div class="status-msg '+(type||'info')+'">'+esc(msg)+'</div>';
-  setTimeout(function(){ el.innerHTML=''; }, 3500);
+  setTimeout(function(){ el.innerHTML=''; }, 4000);
 }
-async function scriptCall(params) {
-  var qs = Object.keys(params).map(function(k){ return encodeURIComponent(k)+'='+encodeURIComponent(params[k]); }).join('&');
-  var res = await fetch(SCRIPT_URL+(qs?'?'+qs:''));
-  if (!res.ok) throw new Error('Request failed ('+res.status+')');
-  var data = await res.json();
-  if (data.error) throw new Error(data.error);
+
+// ── Supabase API ──────────────────────────────────────────────
+async function sbFetch(path, options) {
+  var res = await fetch(SB_URL + path, Object.assign({ headers: HEADERS }, options||{}));
+  if (!res.ok) {
+    var err = await res.json().catch(function(){return {};});
+    throw new Error(err.message || err.error || 'Request failed ('+res.status+')');
+  }
+  return res.status === 204 ? {} : res.json();
+}
+
+async function sbGetAll() {
+  // Fetch all records - Supabase default limit is 1000, use range for larger collections
+  var data = await sbFetch('/rest/v1/records?select=*&order=created_at.asc&limit=10000');
   return data;
+}
+
+async function sbInsert(record) {
+  return sbFetch('/rest/v1/records', {
+    method: 'POST',
+    headers: Object.assign({}, HEADERS, { 'Prefer': 'return=representation' }),
+    body: JSON.stringify(record)
+  });
+}
+
+async function sbDelete(id) {
+  return sbFetch('/rest/v1/records?id=eq.'+encodeURIComponent(id), { method: 'DELETE' });
 }
 
 // ── Init ──────────────────────────────────────────────────────
 async function init() {
-  setSyncStatus('busy','Connecting to Google Sheets…');
+  setSyncStatus('busy', 'Connecting to Supabase…');
   try {
-    var data = await scriptCall({});
-    var rows = data.values||[];
-    var hasHeader = rows.length>0&&rows[0][0]&&rows[0][0].toLowerCase()==='artist';
-    var dataRows = hasHeader?rows.slice(1):rows;
-    if (rows.length===0) await scriptCall({action:'append',row:JSON.stringify(['Artist','Title','Country','Edition','Notes'])});
-    records = dataRows
-      .map(function(r,i){ return {id:'r'+i,sheetRow:i,artist:r[0]||'',title:r[1]||'',country:r[2]||'',edition:r[3]||'',notes:r[4]||''}; })
-      .filter(function(r){ return r.artist||r.title; });
-    setSyncStatus('ok','Synced · '+records.length+' records');
+    var data = await sbGetAll();
+    records = data.map(function(r) {
+      return { id:r.id, artist:r.artist||'', title:r.title||'', country:r.country||'', edition:r.edition||'', notes:r.notes||'', cover_url:r.cover_url||'' };
+    });
+    setSyncStatus('ok', 'Synced · '+records.length+' records');
     renderAll();
   } catch(e) {
-    setSyncStatus('err','Connection failed: '+e.message);
-    document.getElementById('records-list').innerHTML='<div class="empty-state"><div class="big-disc"></div><p>Could not connect.<br><small style="font-size:11px;color:var(--label-red)">'+esc(e.message)+'</small></p></div>';
+    setSyncStatus('err', 'Connection failed: '+e.message);
+    document.getElementById('records-list').innerHTML = '<div class="empty-state"><div class="big-disc"></div><p>Could not connect to Supabase.<br><small style="font-size:11px;color:var(--label-red)">'+esc(e.message)+'</small></p></div>';
   }
 }
 
 // ── Render ────────────────────────────────────────────────────
-function renderAll(){ updateStats(); applySort(); }
+function renderAll() { updateStats(); applySort(); }
 
-function updateStats(){
-  document.getElementById('total-count').textContent=records.length;
+function updateStats() {
+  document.getElementById('total-count').textContent = records.length;
   var a={};records.forEach(function(r){a[r.artist.toLowerCase()]=1;});
-  document.getElementById('artist-count').textContent=Object.keys(a).length;
+  document.getElementById('artist-count').textContent = Object.keys(a).length;
   var c={};records.filter(function(r){return r.country;}).forEach(function(r){c[r.country]=1;});
-  document.getElementById('country-count').textContent=Object.keys(c).length||'—';
+  document.getElementById('country-count').textContent = Object.keys(c).length||'—';
 }
 
-function applySort(){
+function applySort() {
   var q = document.getElementById('search-input').value.toLowerCase().trim();
   var list = q ? records.filter(function(r){
-    return r.artist.toLowerCase().indexOf(q)>=0
-        || r.title.toLowerCase().indexOf(q)>=0
-        || (r.notes&&r.notes.toLowerCase().indexOf(q)>=0);
+    return r.artist.toLowerCase().indexOf(q)>=0 || r.title.toLowerCase().indexOf(q)>=0 || (r.notes&&r.notes.toLowerCase().indexOf(q)>=0);
   }) : records.slice();
-
   if (sortMode==='alpha') {
-    list.sort(function(a,b){
-      return a.artist.toLowerCase().localeCompare(b.artist.toLowerCase())||a.title.toLowerCase().localeCompare(b.title.toLowerCase());
-    });
+    list.sort(function(a,b){ return a.artist.toLowerCase().localeCompare(b.artist.toLowerCase())||a.title.toLowerCase().localeCompare(b.title.toLowerCase()); });
+  } else {
+    // recent = reverse insertion order
+    list.reverse();
   }
-
   filteredList = list;
-  var label = document.getElementById('list-label');
-  label.textContent = q ? 'Results ('+list.length+')' : 'Collection';
-
-  // Reset to page 1 whenever filter/sort changes
+  document.getElementById('list-label').textContent = q ? 'Results ('+list.length+')' : 'Collection';
   currentPage = 1;
   renderPage();
 }
 
-function renderPage(){
+function renderPage() {
   var totalPages = Math.max(1, Math.ceil(filteredList.length / PAGE_SIZE));
   if (currentPage > totalPages) currentPage = totalPages;
-
-  var start = (currentPage - 1) * PAGE_SIZE;
-  var pageItems = filteredList.slice(start, start + PAGE_SIZE);
-
-  renderList(pageItems, start);
+  var start = (currentPage-1)*PAGE_SIZE;
+  renderList(filteredList.slice(start, start+PAGE_SIZE), start);
   renderPagination(totalPages);
 }
 
-function renderList(list, offset){
-  offset = offset || 0;
+function renderList(list, offset) {
+  offset = offset||0;
   var el = document.getElementById('records-list');
   if (!filteredList.length) {
     var q = document.getElementById('search-input').value;
@@ -323,9 +340,11 @@ function renderList(list, offset){
   }
   var cls = ['c1','c2','c3','c4','c5'];
   el.innerHTML = list.map(function(r,i){
-    var gi = offset + i; // global index for colour cycling
-    return '<div class="record-item">'+
-      '<div class="disc-icon '+cls[gi%5]+'"></div>'+
+    var gi = offset+i;
+    var thumb = r.cover_url
+      ? '<div class="record-thumb"><img src="'+esc(r.cover_url)+'" alt="" onerror="this.parentNode.innerHTML=\'<div class=&quot;disc-fallback '+cls[gi%5]+'&quot;></div>\'"></div>'
+      : '<div class="record-thumb"><div class="disc-fallback '+cls[gi%5]+'"></div></div>';
+    return '<div class="record-item">'+thumb+
       '<div class="record-info">'+
         '<div class="record-artist">'+esc(r.artist)+'</div>'+
         '<div class="record-title">'+esc(r.title)+'</div>'+
@@ -333,171 +352,153 @@ function renderList(list, offset){
         ((r.country||r.edition)?'<div class="record-meta">'+(r.country?'<span class="tag">'+esc(r.country)+'</span>':'')+(r.edition?'<span class="tag">'+esc(r.edition)+'</span>':'')+'</div>':'')+'</div>'+
       '<button class="delete-btn" data-id="'+r.id+'">✕</button></div>';
   }).join('');
-  el.querySelectorAll('.delete-btn').forEach(function(b){
-    b.addEventListener('click', function(){ deleteRecord(this.dataset.id); });
-  });
+  el.querySelectorAll('.delete-btn').forEach(function(b){ b.addEventListener('click',function(){deleteRecord(this.dataset.id);}); });
 }
 
-function renderPagination(totalPages){
+function renderPagination(totalPages) {
   var pg = document.getElementById('pagination');
-  if (totalPages <= 1) { pg.innerHTML=''; return; }
-
-  var html = '<div class="pagination">';
-
-  // Prev button
-  html += '<button class="page-btn" id="pg-prev" '+(currentPage===1?'disabled':'')+'>&lsaquo;</button>';
-
-  // Page number buttons — show up to 7 with ellipsis
-  var pages = getPageRange(currentPage, totalPages);
-  pages.forEach(function(p){
-    if (p === '…') {
-      html += '<span class="page-info">…</span>';
-    } else {
-      html += '<button class="page-btn'+(p===currentPage?' active':'')+'" data-page="'+p+'">'+p+'</button>';
-    }
+  if (totalPages<=1){pg.innerHTML='';return;}
+  var html='<div class="pagination">';
+  html+='<button class="page-btn" id="pg-prev"'+(currentPage===1?' disabled':'')+'>&lsaquo;</button>';
+  getPageRange(currentPage,totalPages).forEach(function(p){
+    html += p==='…' ? '<span class="page-info">…</span>' : '<button class="page-btn'+(p===currentPage?' active':'')+'" data-page="'+p+'">'+p+'</button>';
   });
-
-  // Next button
-  html += '<button class="page-btn" id="pg-next" '+(currentPage===totalPages?'disabled':'')+'>&rsaquo;</button>';
-  html += '</div>';
-
-  pg.innerHTML = html;
-
-  pg.querySelector('#pg-prev').addEventListener('click', function(){ if(currentPage>1){currentPage--;renderPage();scrollToList();} });
-  pg.querySelector('#pg-next').addEventListener('click', function(){ if(currentPage<totalPages){currentPage++;renderPage();scrollToList();} });
-  pg.querySelectorAll('.page-btn[data-page]').forEach(function(btn){
-    btn.addEventListener('click', function(){ currentPage=parseInt(this.dataset.page); renderPage(); scrollToList(); });
-  });
+  html+='<button class="page-btn" id="pg-next"'+(currentPage===totalPages?' disabled':'')+'>&rsaquo;</button></div>';
+  pg.innerHTML=html;
+  pg.querySelector('#pg-prev').addEventListener('click',function(){if(currentPage>1){currentPage--;renderPage();scrollToList();}});
+  pg.querySelector('#pg-next').addEventListener('click',function(){if(currentPage<totalPages){currentPage++;renderPage();scrollToList();}});
+  pg.querySelectorAll('.page-btn[data-page]').forEach(function(btn){ btn.addEventListener('click',function(){currentPage=parseInt(this.dataset.page);renderPage();scrollToList();}); });
 }
 
 function getPageRange(current, total) {
-  if (total <= 7) {
-    var pages = [];
-    for (var i=1;i<=total;i++) pages.push(i);
-    return pages;
-  }
-  var result = [1];
-  if (current > 3) result.push('…');
-  for (var p = Math.max(2, current-1); p <= Math.min(total-1, current+1); p++) result.push(p);
-  if (current < total - 2) result.push('…');
+  if (total<=7){var r=[];for(var i=1;i<=total;i++)r.push(i);return r;}
+  var result=[1];
+  if(current>3)result.push('…');
+  for(var p=Math.max(2,current-1);p<=Math.min(total-1,current+1);p++)result.push(p);
+  if(current<total-2)result.push('…');
   result.push(total);
   return result;
 }
-
-function scrollToList(){
-  document.querySelector('.sort-bar').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
+function scrollToList(){ document.querySelector('.sort-bar').scrollIntoView({behavior:'smooth',block:'start'}); }
 
 // ── Search & Sort ─────────────────────────────────────────────
 document.getElementById('search-input').addEventListener('input', applySort);
-document.getElementById('sort-alpha').addEventListener('click',function(){
-  sortMode='alpha'; this.classList.add('active'); document.getElementById('sort-recent').classList.remove('active'); applySort();
-});
-document.getElementById('sort-recent').addEventListener('click',function(){
-  sortMode='recent'; this.classList.add('active'); document.getElementById('sort-alpha').classList.remove('active'); applySort();
-});
+document.getElementById('sort-alpha').addEventListener('click',function(){ sortMode='alpha';this.classList.add('active');document.getElementById('sort-recent').classList.remove('active');applySort(); });
+document.getElementById('sort-recent').addEventListener('click',function(){ sortMode='recent';this.classList.add('active');document.getElementById('sort-alpha').classList.remove('active');applySort(); });
 
 // ── Artist autocomplete ───────────────────────────────────────
 var acInput = document.getElementById('m-artist');
 var acDrop  = document.getElementById('artist-dropdown');
-
-function acMatches(q){
-  var seen={},out=[];
-  records.forEach(function(r){ var k=r.artist.toLowerCase(); if(r.artist&&!seen[k]&&k.indexOf(q.toLowerCase())===0){seen[k]=1;out.push(r.artist);} });
-  return out.sort(function(a,b){return a.toLowerCase().localeCompare(b.toLowerCase());});
-}
-function acShow(matches){
-  if(!matches.length){acHide();return;}
-  acDrop.innerHTML=matches.map(function(a){return '<div class="ac-item">'+esc(a)+'</div>';}).join('');
-  acDrop.querySelectorAll('.ac-item').forEach(function(item){
-    item.addEventListener('touchstart',function(e){e.stopPropagation();},{passive:true});
-    item.addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();acSelect(this.textContent);});
-    item.addEventListener('mousedown',function(e){e.preventDefault();acSelect(this.textContent);});
-  });
-  acDrop.classList.add('open'); acOpen=true;
-}
-function acHide(){ acDrop.classList.remove('open'); acOpen=false; }
-function acSelect(val){ acInput.value=val; acHide(); document.getElementById('m-title').focus(); }
-
-acInput.addEventListener('input',function(){ var q=this.value.trim(); if(!q){acHide();return;} acShow(acMatches(q)); });
-acInput.addEventListener('focus',function(){ var q=this.value.trim(); if(q) acShow(acMatches(q)); });
-acInput.addEventListener('blur',function(){ setTimeout(acHide,300); });
-document.addEventListener('touchstart',function(e){ if(!acDrop.contains(e.target)&&e.target!==acInput) acHide(); },{passive:true});
-document.addEventListener('mousedown',function(e){ if(!acDrop.contains(e.target)&&e.target!==acInput) acHide(); });
-acInput.addEventListener('keydown',function(e){
-  var items=acDrop.querySelectorAll('.ac-item');
-  var active=acDrop.querySelector('.ac-item.highlighted');
-  var idx=active?Array.prototype.indexOf.call(items,active):-1;
-  if(e.key==='ArrowDown'){e.preventDefault();if(idx<items.length-1){if(active)active.classList.remove('highlighted');items[idx+1].classList.add('highlighted');}}
-  else if(e.key==='ArrowUp'){e.preventDefault();if(idx>0){active.classList.remove('highlighted');items[idx-1].classList.add('highlighted');}}
-  else if(e.key==='Enter'&&active){e.preventDefault();acSelect(active.textContent);}
-  else if(e.key==='Escape'){acHide();}
-});
+function acMatches(q){ var seen={},out=[];records.forEach(function(r){var k=r.artist.toLowerCase();if(r.artist&&!seen[k]&&k.indexOf(q.toLowerCase())===0){seen[k]=1;out.push(r.artist);}});return out.sort(function(a,b){return a.toLowerCase().localeCompare(b.toLowerCase());}); }
+function acShow(m){ if(!m.length){acHide();return;} acDrop.innerHTML=m.map(function(a){return '<div class="ac-item">'+esc(a)+'</div>';}).join(''); acDrop.querySelectorAll('.ac-item').forEach(function(item){ item.addEventListener('touchstart',function(e){e.stopPropagation();},{passive:true}); item.addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();acSelect(this.textContent);}); item.addEventListener('mousedown',function(e){e.preventDefault();acSelect(this.textContent);}); }); acDrop.classList.add('open');acOpen=true; }
+function acHide(){ acDrop.classList.remove('open');acOpen=false; }
+function acSelect(v){ acInput.value=v;acHide();document.getElementById('m-title').focus(); }
+acInput.addEventListener('input',function(){var q=this.value.trim();if(!q){acHide();return;}acShow(acMatches(q));});
+acInput.addEventListener('focus',function(){var q=this.value.trim();if(q)acShow(acMatches(q));});
+acInput.addEventListener('blur',function(){setTimeout(acHide,300);});
+document.addEventListener('touchstart',function(e){if(!acDrop.contains(e.target)&&e.target!==acInput)acHide();},{passive:true});
+document.addEventListener('mousedown',function(e){if(!acDrop.contains(e.target)&&e.target!==acInput)acHide();});
+acInput.addEventListener('keydown',function(e){ var items=acDrop.querySelectorAll('.ac-item'),active=acDrop.querySelector('.ac-item.highlighted'),idx=active?Array.prototype.indexOf.call(items,active):-1; if(e.key==='ArrowDown'){e.preventDefault();if(idx<items.length-1){if(active)active.classList.remove('highlighted');items[idx+1].classList.add('highlighted');}} else if(e.key==='ArrowUp'){e.preventDefault();if(idx>0){active.classList.remove('highlighted');items[idx-1].classList.add('highlighted');}} else if(e.key==='Enter'&&active){e.preventDefault();acSelect(active.textContent);} else if(e.key==='Escape'){acHide();} });
 
 // ── Add / Delete ──────────────────────────────────────────────
-async function addRecord(artist,title,country,edition,notes){
-  if(saving)return false;
-  country=country||'';edition=edition||'';notes=notes||'';
-  var dup=records.filter(function(r){return r.artist.toLowerCase()===artist.toLowerCase()&&r.title.toLowerCase()===title.toLowerCase();})[0];
-  if(dup){showStatus('Already in catalogue: '+artist+' — '+title,'error');return false;}
+async function addRecord(artist, title, country, edition, notes, cover_url) {
+  if (saving) return false;
+  country=country||'';edition=edition||'';notes=notes||'';cover_url=cover_url||'';
+  var dup = records.filter(function(r){ return r.artist.toLowerCase()===artist.toLowerCase()&&r.title.toLowerCase()===title.toLowerCase(); })[0];
+  if (dup) { showStatus('Already in catalogue: '+artist+' — '+title,'error'); return false; }
   saving=true; setSyncStatus('busy','Saving…');
-  try{
-    await scriptCall({action:'append',row:JSON.stringify([artist,title,country,edition,notes])});
-    records.push({id:'r'+records.length,sheetRow:records.length,artist:artist,title:title,country:country,edition:edition,notes:notes});
+  try {
+    var result = await sbInsert({ artist:artist, title:title, country:country, edition:edition, notes:notes, cover_url:cover_url });
+    var newRec = result[0] || { id:Date.now()+'', artist:artist, title:title, country:country, edition:edition, notes:notes, cover_url:cover_url };
+    records.push({ id:newRec.id, artist:artist, title:title, country:country, edition:edition, notes:notes, cover_url:cover_url });
     setSyncStatus('ok','Synced · '+records.length+' records');
     renderAll(); saving=false; return true;
-  }catch(e){saving=false;setSyncStatus('err','Save failed: '+e.message);showStatus('Could not save: '+e.message,'error');return false;}
+  } catch(e) {
+    saving=false; setSyncStatus('err','Save failed: '+e.message); showStatus('Could not save: '+e.message,'error'); return false;
+  }
 }
 
-async function deleteRecord(id){
-  var idx=-1; records.forEach(function(r,i){if(r.id===id)idx=i;});
+async function deleteRecord(id) {
+  var idx=-1; records.forEach(function(r,i){if(String(r.id)===String(id))idx=i;});
   if(idx===-1)return;
   var rec=records[idx];
   if(!confirm('Remove "'+rec.artist+' — '+rec.title+'"?'))return;
   setSyncStatus('busy','Removing…');
-  try{
-    await scriptCall({action:'delete',rowIndex:rec.sheetRow});
-    records.splice(idx,1); records.forEach(function(r,i){r.id='r'+i;r.sheetRow=i;});
+  try {
+    await sbDelete(id);
+    records.splice(idx,1);
     setSyncStatus('ok','Synced · '+records.length+' records'); renderAll();
-  }catch(e){setSyncStatus('err','Delete failed: '+e.message);showStatus('Could not remove — check connection.','error');}
+  } catch(e) { setSyncStatus('err','Delete failed: '+e.message); showStatus('Could not remove — check connection.','error'); }
 }
 
-document.getElementById('manual-save-btn').addEventListener('click',async function(){
+// ── Manual save ───────────────────────────────────────────────
+document.getElementById('manual-save-btn').addEventListener('click', async function() {
   var artist=document.getElementById('m-artist').value.trim();
   var title=document.getElementById('m-title').value.trim();
   var country=document.getElementById('m-country').value.trim();
   var edition=document.getElementById('m-edition').value.trim();
   var notes=document.getElementById('m-notes').value.trim();
   if(!artist||!title){showStatus('Artist and title are required.','error');return;}
-  var ok=await addRecord(artist,title,country,edition,notes);
-  if(ok){
-    showStatus('Added: '+artist+' — '+title,'success');
-    ['m-artist','m-title','m-country','m-edition','m-notes'].forEach(function(id){document.getElementById(id).value='';});
-    acHide(); closePanel('manual-panel');
+  var ok=await addRecord(artist,title,country,edition,notes,'');
+  if(ok){ showStatus('Added: '+artist+' — '+title,'success'); ['m-artist','m-title','m-country','m-edition','m-notes'].forEach(function(id){document.getElementById(id).value='';}); acHide();closePanel('manual-panel'); }
+});
+
+// ── Barcode save ──────────────────────────────────────────────
+document.getElementById('bc-save-btn').addEventListener('click', async function() {
+  if(!barcodeData||typeof barcodeData!=='object')return;
+  var country=document.getElementById('bc-country').value.trim();
+  var edition=document.getElementById('bc-edition').value.trim();
+  var notes=document.getElementById('bc-notes').value.trim();
+  var ok=await addRecord(barcodeData.artist,barcodeData.title,country,edition,notes,barcodeData.cover_url||'');
+  if(ok){ showStatus('Added: '+barcodeData.artist+' — '+barcodeData.title,'success'); ['bc-country','bc-edition','bc-notes','manual-barcode'].forEach(function(id){document.getElementById(id).value='';}); barcodeData=null;closePanel('barcode-panel'); }
+});
+
+// ── Google Sheets import ──────────────────────────────────────
+document.getElementById('import-btn').addEventListener('click', async function() {
+  if (!confirm('Import records from your Google Sheet? Duplicates will be skipped.')) return;
+  setSyncStatus('busy', 'Importing from Google Sheets…');
+  try {
+    var res = await fetch(SHEET_URL);
+    var data = await res.json();
+    var rows = data.values||[];
+    var hasHeader = rows.length>0&&rows[0][0]&&rows[0][0].toLowerCase()==='artist';
+    var dataRows = hasHeader?rows.slice(1):rows;
+    var toInsert = [];
+    dataRows.forEach(function(r){
+      var artist=r[0]||'',title=r[1]||'';
+      if(!artist&&!title)return;
+      var dup=records.filter(function(ex){return ex.artist.toLowerCase()===artist.toLowerCase()&&ex.title.toLowerCase()===title.toLowerCase();})[0];
+      if(!dup) toInsert.push({artist:artist,title:title,country:r[2]||'',edition:r[3]||'',notes:r[4]||'',cover_url:''});
+    });
+    if(!toInsert.length){showStatus('Nothing new to import — all records already exist.','info');setSyncStatus('ok','Synced · '+records.length+' records');return;}
+    // Insert in batches of 50
+    var imported=0;
+    for(var i=0;i<toInsert.length;i+=50){
+      var batch=toInsert.slice(i,i+50);
+      var result=await sbFetch('/rest/v1/records',{method:'POST',headers:Object.assign({},HEADERS,{'Prefer':'return=representation'}),body:JSON.stringify(batch)});
+      result.forEach(function(r){ records.push({id:r.id,artist:r.artist,title:r.title,country:r.country||'',edition:r.edition||'',notes:r.notes||'',cover_url:r.cover_url||''}); });
+      imported+=batch.length;
+    }
+    setSyncStatus('ok','Synced · '+records.length+' records');
+    showStatus('Imported '+imported+' record'+(imported!==1?'s':'')+' from Google Sheets.','success');
+    renderAll();
+  } catch(e) {
+    setSyncStatus('err','Import failed: '+e.message);
+    showStatus('Import failed: '+e.message,'error');
   }
 });
 
 // ── Panels ────────────────────────────────────────────────────
-function togglePanel(id){
-  var panel=document.getElementById(id);
-  var isHidden=panel.classList.contains('hidden');
-  ['barcode-panel','manual-panel'].forEach(function(p){document.getElementById(p).classList.add('hidden');});
-  if(isHidden){panel.classList.remove('hidden');if(id==='barcode-panel')startScanner();}
-  else{if(id==='barcode-panel')stopScanner();}
-}
-function closePanel(id){ document.getElementById(id).classList.add('hidden'); if(id==='barcode-panel')stopScanner(); }
+function togglePanel(id){ var panel=document.getElementById(id),isHidden=panel.classList.contains('hidden'); ['barcode-panel','manual-panel'].forEach(function(p){document.getElementById(p).classList.add('hidden');}); if(isHidden){panel.classList.remove('hidden');if(id==='barcode-panel')startScanner();}else{if(id==='barcode-panel')stopScanner();} }
+function closePanel(id){ document.getElementById(id).classList.add('hidden');if(id==='barcode-panel')stopScanner(); }
 document.getElementById('btn-barcode').addEventListener('click',function(){togglePanel('barcode-panel');});
 document.getElementById('btn-manual').addEventListener('click',function(){togglePanel('manual-panel');});
 document.getElementById('close-barcode').addEventListener('click',function(){closePanel('barcode-panel');});
 document.getElementById('close-manual').addEventListener('click',function(){closePanel('manual-panel');});
 
 // ── Manual barcode lookup ─────────────────────────────────────
-document.getElementById('manual-barcode-btn').addEventListener('click',function(){
-  var code=document.getElementById('manual-barcode').value.trim();
-  if(!code){showStatus('Enter a barcode number first.','error');return;}
-  stopScanner(); lookupBarcode(code);
-});
-document.getElementById('manual-barcode').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('manual-barcode-btn').click(); });
+document.getElementById('manual-barcode-btn').addEventListener('click',function(){ var code=document.getElementById('manual-barcode').value.trim(); if(!code){showStatus('Enter a barcode number first.','error');return;} stopScanner();lookupBarcode(code); });
+document.getElementById('manual-barcode').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('manual-barcode-btn').click();});
 
 // ── Scanner ───────────────────────────────────────────────────
 function startScanner(){
@@ -508,8 +509,7 @@ function startScanner(){
   try{
     codeReader=new ZXing.BrowserMultiFormatReader();
     codeReader.listVideoInputDevices().then(function(devices){
-      var deviceId;
-      devices.forEach(function(d){var l=d.label.toLowerCase();if(l.indexOf('back')>=0||l.indexOf('rear')>=0||l.indexOf('environment')>=0)deviceId=d.deviceId;});
+      var deviceId; devices.forEach(function(d){var l=d.label.toLowerCase();if(l.indexOf('back')>=0||l.indexOf('rear')>=0||l.indexOf('environment')>=0)deviceId=d.deviceId;});
       if(!deviceId&&devices.length>0)deviceId=devices[devices.length-1].deviceId;
       navigator.mediaDevices.getUserMedia({video:{deviceId:deviceId?{exact:deviceId}:undefined,facingMode:deviceId?undefined:{ideal:'environment'},width:{ideal:1280},height:{ideal:720},advanced:[{focusMode:'continuous'}]}}).then(function(stream){
         var video=document.getElementById('scanner-video');
@@ -530,12 +530,7 @@ function startScanner(){
   }catch(err){document.getElementById('scanner-status').textContent='Scanner unavailable — enter barcode manually above.';scanning=false;}
 }
 
-function stopScanner(){
-  scanning=false;lastScanned=null;
-  if(codeReader){try{codeReader.reset();}catch(e){}codeReader=null;}
-  var v=document.getElementById('scanner-video');
-  if(v&&v.srcObject){v.srcObject.getTracks().forEach(function(t){t.stop();});v.srcObject=null;}
-}
+function stopScanner(){ scanning=false;lastScanned=null; if(codeReader){try{codeReader.reset();}catch(e){}codeReader=null;} var v=document.getElementById('scanner-video'); if(v&&v.srcObject){v.srcObject.getTracks().forEach(function(t){t.stop();});v.srcObject=null;} }
 
 async function lookupBarcode(code){
   var s=document.getElementById('scanner-status');
@@ -548,9 +543,9 @@ async function lookupBarcode(code){
     if(data.results&&data.results.length>0){
       var top=data.results[0];
       var parts=(top.title||'').split(' - ');
-      var artist=parts[0]||''; var title=parts.slice(1).join(' - ')||top.title||'';
+      var artist=parts[0]||'',title=parts.slice(1).join(' - ')||top.title||'';
       var cover=(top.cover_image&&top.cover_image.indexOf('spacer')===-1)?top.cover_image:'';
-      barcodeData={artist:artist,title:title};
+      barcodeData={artist:artist,title:title,cover_url:cover};
       var re=document.getElementById('barcode-result');
       re.className='lookup-result';
       re.innerHTML=(cover?'<img class="lookup-cover" src="'+esc(cover)+'" alt="" onerror="this.style.display=\'none\'">':'')+
@@ -563,19 +558,6 @@ async function lookupBarcode(code){
     }
   }catch(e){ s.textContent='Lookup failed — check your connection.'; }
 }
-
-document.getElementById('bc-save-btn').addEventListener('click',async function(){
-  if(!barcodeData||typeof barcodeData!=='object')return;
-  var country=document.getElementById('bc-country').value.trim();
-  var edition=document.getElementById('bc-edition').value.trim();
-  var notes=document.getElementById('bc-notes').value.trim();
-  var ok=await addRecord(barcodeData.artist,barcodeData.title,country,edition,notes);
-  if(ok){
-    showStatus('Added: '+barcodeData.artist+' — '+barcodeData.title,'success');
-    ['bc-country','bc-edition','bc-notes','manual-barcode'].forEach(function(id){document.getElementById(id).value='';});
-    barcodeData=null; closePanel('barcode-panel');
-  }
-});
 
 // ── Export CSV ────────────────────────────────────────────────
 document.getElementById('export-btn').addEventListener('click',function(){
