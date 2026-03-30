@@ -114,6 +114,9 @@
   .delete-btn { background: none; border: none; cursor: pointer; color: var(--muted); opacity: 0; transition: opacity 0.15s; padding: 4px; font-size: 14px; flex-shrink: 0; }
   .record-item:hover .delete-btn { opacity: 1; }
   .delete-btn:hover { color: var(--label-red); }
+  .edit-btn { background: none; border: none; cursor: pointer; color: var(--muted); opacity: 0; transition: opacity 0.15s; padding: 4px; font-size: 15px; flex-shrink: 0; }
+  .record-item:hover .edit-btn { opacity: 1; }
+  .edit-btn:hover { color: var(--groove); }
   .empty-state { padding: 3rem 1.5rem; text-align: center; }
   .empty-state .big-disc { width: 80px; height: 80px; border-radius: 50%; background: var(--groove); margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; opacity: 0.15; }
   .empty-state .big-disc::after { content: ''; width: 16px; height: 16px; border-radius: 50%; background: var(--cream); }
@@ -233,6 +236,35 @@
     </div>
   </div>
 
+
+  <!-- Edit panel -->
+  <div class="panel hidden" id="edit-panel">
+    <div class="panel-header">Edit record <button class="close-btn" id="close-edit">×</button></div>
+    <div class="panel-body" style="overflow:visible">
+      <div class="form-group">
+        <label>Artist *</label>
+        <input type="text" id="e-artist" placeholder="e.g. Charles Mingus">
+      </div>
+      <div class="form-group"><label>Title *</label><input type="text" id="e-title" placeholder="e.g. Mingus Ah Um"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Country (optional)</label><input type="text" id="e-country" placeholder="e.g. US"></div>
+        <div class="form-group"><label>Edition (optional)</label><input type="text" id="e-edition" placeholder="e.g. Original"></div>
+      </div>
+      <div class="form-group"><label>Notes (optional)</label><textarea id="e-notes" placeholder="e.g. romanji, coloured vinyl…"></textarea></div>
+      <div class="form-group">
+        <label>Cover image (optional)</label>
+        <input type="file" class="cover-file-input" id="e-cover-input" accept="image/*">
+        <div class="cover-preview hidden" id="e-cover-preview">
+          <img id="e-cover-img" src="" alt="">
+          <div class="cover-preview-info">Cover ready</div>
+          <button class="cover-remove-btn" id="e-cover-remove">×</button>
+        </div>
+        <button class="cover-upload-btn" id="e-cover-btn">📷 Change cover photo</button>
+      </div>
+      <button class="submit-btn" id="edit-save-btn">Save changes</button>
+    </div>
+  </div>
+
   <div id="status-area"></div>
 
   <div>
@@ -272,7 +304,7 @@ var filteredList = [];
 var acOpen       = false;
 
 // Pending cover blobs: { bc: Blob|null, m: Blob|null }
-var pendingCovers = { bc: null, m: null };
+var pendingCovers = { bc: null, m: null, e: null };
 
 // ── Helpers ───────────────────────────────────────────────────
 function setSyncStatus(state, msg) {
@@ -422,6 +454,8 @@ async function init() {
   }
   setupCoverUpload('bc');
   setupCoverUpload('m');
+  setupCoverUpload('e');
+  setupCoverUpload('e');
 }
 
 // ── Render ────────────────────────────────────────────────────
@@ -479,9 +513,10 @@ function renderList(list, offset) {
         '<div class="record-title">'+esc(r.title)+'</div>'+
         (r.notes?'<div class="record-notes">'+esc(r.notes)+'</div>':'')+
         ((r.country||r.edition)?'<div class="record-meta">'+(r.country?'<span class="tag">'+esc(r.country)+'</span>':'')+(r.edition?'<span class="tag">'+esc(r.edition)+'</span>':'')+'</div>':'')+'</div>'+
-      '<button class="delete-btn" data-id="'+r.id+'">✕</button></div>';
+      '<button class="edit-btn" data-id="'+r.id+'">✎</button><button class="delete-btn" data-id="'+r.id+'">✕</button></div>';
   }).join('');
   el.querySelectorAll('.delete-btn').forEach(function(b){ b.addEventListener('click',function(){deleteRecord(this.dataset.id);}); });
+  el.querySelectorAll('.edit-btn').forEach(function(b){ b.addEventListener('click',function(){openEdit(this.dataset.id);}); });
 }
 
 function renderPagination(totalPages) {
@@ -622,7 +657,7 @@ document.getElementById('bc-save-btn').addEventListener('click', async function(
 });
 
 // ── Panels ────────────────────────────────────────────────────
-function togglePanel(id){var panel=document.getElementById(id),isHidden=panel.classList.contains('hidden');['barcode-panel','manual-panel'].forEach(function(p){document.getElementById(p).classList.add('hidden');});if(isHidden){panel.classList.remove('hidden');if(id==='barcode-panel')startScanner();}else{if(id==='barcode-panel')stopScanner();}}
+function togglePanel(id){var panel=document.getElementById(id),isHidden=panel.classList.contains('hidden');['barcode-panel','manual-panel','edit-panel'].forEach(function(p){document.getElementById(p).classList.add('hidden');});if(isHidden){panel.classList.remove('hidden');if(id==='barcode-panel')startScanner();}else{if(id==='barcode-panel')stopScanner();}}
 function closePanel(id){document.getElementById(id).classList.add('hidden');if(id==='barcode-panel')stopScanner();}
 document.getElementById('btn-barcode').addEventListener('click',function(){togglePanel('barcode-panel');});
 document.getElementById('btn-manual').addEventListener('click',function(){togglePanel('manual-panel');});
@@ -690,6 +725,82 @@ async function lookupBarcode(code){
     }
   }catch(e){s.textContent='Lookup failed — check your connection.';}
 }
+
+
+// ── Edit record ────────────────────────────────────────────────
+var editingId = null;
+
+document.getElementById('close-edit').addEventListener('click', function(){ closePanel('edit-panel'); });
+
+function openEdit(id) {
+  var rec = records.filter(function(r){ return String(r.id) === String(id); })[0];
+  if (!rec) return;
+  editingId = id;
+  document.getElementById('e-artist').value  = rec.artist;
+  document.getElementById('e-title').value   = rec.title;
+  document.getElementById('e-country').value = rec.country||'';
+  document.getElementById('e-edition').value = rec.edition||'';
+  document.getElementById('e-notes').value   = rec.notes||'';
+  // Show existing cover if present
+  var preview = document.getElementById('e-cover-preview');
+  var img     = document.getElementById('e-cover-img');
+  var btn     = document.getElementById('e-cover-btn');
+  pendingCovers.e = null;
+  if (rec.cover_url) {
+    img.src = rec.cover_url;
+    preview.classList.remove('hidden');
+    preview.querySelector('.cover-preview-info').textContent = 'Current cover';
+    btn.textContent = '📷 Change cover photo';
+    btn.classList.add('hidden');
+  } else {
+    img.src = '';
+    preview.classList.add('hidden');
+    btn.textContent = '📷 Add cover photo';
+    btn.classList.remove('hidden');
+  }
+  ['barcode-panel','manual-panel'].forEach(function(p){ document.getElementById(p).classList.add('hidden'); });
+  document.getElementById('edit-panel').classList.remove('hidden');
+}
+
+document.getElementById('edit-save-btn').addEventListener('click', async function() {
+  if (!editingId) return;
+  var artist  = document.getElementById('e-artist').value.trim();
+  var title   = document.getElementById('e-title').value.trim();
+  var country = document.getElementById('e-country').value.trim();
+  var edition = document.getElementById('e-edition').value.trim();
+  var notes   = document.getElementById('e-notes').value.trim();
+  if (!artist || !title) { showStatus('Artist and title are required.', 'error'); return; }
+  setSyncStatus('busy', 'Saving changes…');
+  try {
+    var cover_url = records.filter(function(r){ return String(r.id)===String(editingId); })[0].cover_url || '';
+    if (pendingCovers.e) {
+      setSyncStatus('busy', 'Uploading cover…');
+      var filename = Date.now() + '-' + Math.random().toString(36).slice(2) + '.jpg';
+      cover_url = await uploadCover(pendingCovers.e, filename);
+    }
+    var updateData = { artist:artist, title:title, country:country, edition:edition, notes:notes, cover_url:cover_url };
+    await sbFetch('/rest/v1/records?id=eq.'+encodeURIComponent(editingId), {
+      method: 'PATCH',
+      headers: Object.assign({}, HEADERS, { 'Prefer': 'return=minimal' }),
+      body: JSON.stringify(updateData)
+    });
+    // Update local record
+    records.forEach(function(r) {
+      if (String(r.id) === String(editingId)) {
+        r.artist=artist; r.title=title; r.country=country; r.edition=edition; r.notes=notes; r.cover_url=cover_url;
+      }
+    });
+    setSyncStatus('ok', 'Synced · '+records.length+' records');
+    showStatus('Updated: '+artist+' — '+title, 'success');
+    pendingCovers.e = null;
+    editingId = null;
+    closePanel('edit-panel');
+    renderAll();
+  } catch(e) {
+    setSyncStatus('err', 'Update failed: '+e.message);
+    showStatus('Could not save changes: '+e.message, 'error');
+  }
+});
 
 // ── Export CSV ────────────────────────────────────────────────
 document.getElementById('export-btn').addEventListener('click',function(){
