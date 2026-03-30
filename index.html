@@ -53,8 +53,6 @@
   .form-row .form-group { flex: 1; }
   .submit-btn { width: 100%; padding: 0.75rem; margin-top: 1.25rem; font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: 0.06em; background: var(--groove); color: var(--cream); border: none; border-radius: 8px; cursor: pointer; }
   .submit-btn:hover { background: #1a1208; }
-
-  /* Barcode input row */
   .barcode-input-row { display: flex; gap: 8px; margin-bottom: 1rem; }
   .barcode-input-row input { flex: 1; padding: 0.625rem 0.875rem; font-family: 'DM Mono', monospace; font-size: 13px; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; color: var(--ink); outline: none; }
   .barcode-input-row input:focus { border-color: rgba(26,18,8,0.4); background: #fff; }
@@ -62,28 +60,24 @@
   .barcode-lookup-btn:hover { background: #1a1208; }
   .barcode-divider { text-align: center; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin: 1rem 0; display: flex; align-items: center; gap: 10px; }
   .barcode-divider::before, .barcode-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-  /* Autocomplete */
   .ac-wrap { position: relative; }
   .ac-dropdown { display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0; z-index: 9999; background: var(--card-bg); border: 1px solid rgba(26,18,8,0.3); border-radius: 6px; max-height: 200px; overflow-y: auto; box-shadow: 0 6px 20px rgba(26,18,8,0.15); }
   .ac-dropdown.open { display: block; }
   .ac-item { padding: 0.7rem 0.875rem; font-size: 13px; font-family: 'DM Mono', monospace; color: var(--ink); cursor: pointer; border-bottom: 1px solid var(--border); }
   .ac-item:last-child { border-bottom: none; }
   .ac-item.highlighted, .ac-item:hover { background: var(--warm); }
-
   #scanner-wrap { position: relative; background: #000; border-radius: 8px; overflow: hidden; width: 100%; aspect-ratio: 4/3; margin-bottom: 1rem; }
   #scanner-video { width: 100%; height: 100%; object-fit: cover; display: block; }
   .scanner-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 72%; height: 28%; border: 2px solid rgba(255,255,255,0.7); border-radius: 4px; box-shadow: 0 0 0 1000px rgba(0,0,0,0.5); pointer-events: none; }
   .scanner-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--label-red); animation: scan 2s ease-in-out infinite; }
   @keyframes scan { 0%,100%{top:8%} 50%{top:88%} }
   .scanner-status { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 0.75rem; min-height: 20px; }
-
-  /* Sort bar */
-  .sort-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
-  .sort-bar span { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); flex: 1; }
+  .sort-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; flex-wrap: wrap; }
+  .sort-bar-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); flex: 1; }
   .sort-btn { font-family: 'DM Mono', monospace; font-size: 10px; padding: 3px 9px; border-radius: 5px; border: 1px solid var(--border); background: none; cursor: pointer; color: var(--muted); }
   .sort-btn.active { background: var(--groove); color: var(--cream); border-color: var(--groove); }
-
+  .export-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; color: var(--muted); }
+  .export-btn:hover { background: var(--warm); color: var(--ink); }
   .record-item { display: flex; align-items: flex-start; gap: 1rem; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--border); transition: background 0.1s; }
   .record-item:last-child { border-bottom: none; }
   .record-item:hover { background: #faf8f3; }
@@ -93,7 +87,7 @@
   .record-info { flex: 1; min-width: 0; }
   .record-artist { font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--groove); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .record-title { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .record-notes { font-size: 11px; color: var(--muted); margin-top: 4px; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .record-notes { font-size: 11px; color: var(--muted); margin-top: 3px; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .record-meta { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
   .tag { font-size: 10px; padding: 2px 7px; border-radius: 3px; background: var(--warm); color: var(--muted); }
   .delete-btn { background: none; border: none; cursor: pointer; color: var(--muted); opacity: 0; transition: opacity 0.15s; padding: 4px; font-size: 14px; flex-shrink: 0; }
@@ -110,8 +104,15 @@
   .lookup-cover { width: 52px; height: 52px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
   .lookup-text strong { display: block; font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--groove); }
   .lookup-text span { color: var(--muted); font-size: 12px; }
-  .export-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; color: var(--muted); }
-  .export-btn:hover { background: var(--warm); color: var(--ink); }
+
+  /* Pagination */
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 1rem 1.25rem; border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .page-btn { font-family: 'DM Mono', monospace; font-size: 12px; min-width: 32px; height: 32px; padding: 0 6px; border-radius: 6px; border: 1px solid var(--border); background: none; cursor: pointer; color: var(--muted); display: flex; align-items: center; justify-content: center; }
+  .page-btn:hover { background: var(--warm); color: var(--ink); }
+  .page-btn.active { background: var(--groove); color: var(--cream); border-color: var(--groove); font-weight: 500; }
+  .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .page-info { font-size: 11px; color: var(--muted); padding: 0 8px; }
+
   .hidden { display: none !important; }
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(26,18,8,0.1); border-top-color: var(--ink); border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -150,7 +151,6 @@
   <div class="panel hidden" id="barcode-panel">
     <div class="panel-header">Barcode scanner <button class="close-btn" id="close-barcode">×</button></div>
     <div class="panel-body">
-      <!-- Manual barcode entry -->
       <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Enter barcode manually</div>
       <div class="barcode-input-row">
         <input type="text" id="manual-barcode" placeholder="e.g. 5099749408029" inputmode="numeric">
@@ -165,10 +165,10 @@
       <div id="barcode-result" class="hidden"></div>
       <div id="barcode-form" class="hidden">
         <div class="form-row">
-          <div class="form-group"><label>Country (optional)</label><input type="text" id="bc-country" placeholder="e.g. UK, US, DE"></div>
+          <div class="form-group"><label>Country (optional)</label><input type="text" id="bc-country" placeholder="e.g. UK, US, JP"></div>
           <div class="form-group"><label>Edition (optional)</label><input type="text" id="bc-edition" placeholder="e.g. Original, Repress"></div>
         </div>
-        <div class="form-group"><label>Notes (optional)</label><textarea id="bc-notes" placeholder="e.g. Tatsuro Yamashita, Japanese press, coloured vinyl…"></textarea></div>
+        <div class="form-group"><label>Notes (optional)</label><textarea id="bc-notes" placeholder="e.g. Tatsuro Yamashita, coloured vinyl…"></textarea></div>
         <button class="submit-btn" id="bc-save-btn">Add to catalogue</button>
       </div>
     </div>
@@ -190,7 +190,7 @@
         <div class="form-group"><label>Country (optional)</label><input type="text" id="m-country" placeholder="e.g. JP"></div>
         <div class="form-group"><label>Edition (optional)</label><input type="text" id="m-edition" placeholder="e.g. Original"></div>
       </div>
-      <div class="form-group"><label>Notes (optional)</label><textarea id="m-notes" placeholder="e.g. Tatsuro Yamashita — romanji, coloured vinyl, promo copy…"></textarea></div>
+      <div class="form-group"><label>Notes (optional)</label><textarea id="m-notes" placeholder="e.g. Tatsuro Yamashita, romanji, promo copy…"></textarea></div>
       <button class="submit-btn" id="manual-save-btn">Add to catalogue</button>
     </div>
   </div>
@@ -199,15 +199,16 @@
 
   <div>
     <div class="sort-bar">
-      <span id="list-label">Collection</span>
-      <button class="sort-btn active" id="sort-alpha" title="Sort A–Z">A–Z</button>
-      <button class="sort-btn" id="sort-recent" title="Sort by recently added">Recent</button>
+      <span class="sort-bar-label" id="list-label">Collection</span>
+      <button class="sort-btn active" id="sort-alpha">A–Z</button>
+      <button class="sort-btn" id="sort-recent">Recent</button>
       <button class="export-btn" id="export-btn">Export CSV</button>
     </div>
     <div class="panel" style="overflow:hidden">
       <div id="records-list">
         <div class="loading-screen"><span class="spinner"></span> Loading your collection…</div>
       </div>
+      <div id="pagination"></div>
     </div>
   </div>
 </div>
@@ -215,6 +216,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWakCy6WRWol9XiwxOe8aEAM_8LoaSxjIGa01upau9alkT2kAE-MPWPhfAHEFKttqf/exec';
+const PAGE_SIZE  = 20;
 
 var records     = [];
 var barcodeData = null;
@@ -222,16 +224,16 @@ var codeReader  = null;
 var scanning    = false;
 var lastScanned = null;
 var saving      = false;
-var sortMode    = 'alpha'; // 'alpha' | 'recent'
+var sortMode    = 'alpha';
+var currentPage = 1;
 var acOpen      = false;
+var filteredList = [];
 
 function setSyncStatus(state, msg) {
   document.getElementById('sync-dot').className = 'sync-dot'+(state?' '+state:'');
   document.getElementById('sync-label').textContent = msg;
 }
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function showStatus(msg, type) {
   var el = document.getElementById('status-area');
   el.innerHTML = '<div class="status-msg '+(type||'info')+'">'+esc(msg)+'</div>';
@@ -286,26 +288,44 @@ function applySort(){
   }) : records.slice();
 
   if (sortMode==='alpha') {
-    list.sort(function(a,b){ return a.artist.toLowerCase().localeCompare(b.artist.toLowerCase())||a.title.toLowerCase().localeCompare(b.title.toLowerCase()); });
+    list.sort(function(a,b){
+      return a.artist.toLowerCase().localeCompare(b.artist.toLowerCase())||a.title.toLowerCase().localeCompare(b.title.toLowerCase());
+    });
   }
-  // 'recent' = insertion order (natural sheet order, already correct)
 
+  filteredList = list;
   var label = document.getElementById('list-label');
   label.textContent = q ? 'Results ('+list.length+')' : 'Collection';
-  renderList(list);
+
+  // Reset to page 1 whenever filter/sort changes
+  currentPage = 1;
+  renderPage();
 }
 
-function renderList(list){
-  var el=document.getElementById('records-list');
-  if(!list.length){
-    var q=document.getElementById('search-input').value;
-    el.innerHTML='<div class="empty-state"><div class="big-disc"></div><p>'+(q?'No records match your search.':'Your catalogue is empty.<br>Add your first record above.')+'</p></div>';
+function renderPage(){
+  var totalPages = Math.max(1, Math.ceil(filteredList.length / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  var start = (currentPage - 1) * PAGE_SIZE;
+  var pageItems = filteredList.slice(start, start + PAGE_SIZE);
+
+  renderList(pageItems, start);
+  renderPagination(totalPages);
+}
+
+function renderList(list, offset){
+  offset = offset || 0;
+  var el = document.getElementById('records-list');
+  if (!filteredList.length) {
+    var q = document.getElementById('search-input').value;
+    el.innerHTML = '<div class="empty-state"><div class="big-disc"></div><p>'+(q?'No records match your search.':'Your catalogue is empty.<br>Add your first record above.')+'</p></div>';
     return;
   }
-  var cls=['c1','c2','c3','c4','c5'];
-  el.innerHTML=list.map(function(r,i){
+  var cls = ['c1','c2','c3','c4','c5'];
+  el.innerHTML = list.map(function(r,i){
+    var gi = offset + i; // global index for colour cycling
     return '<div class="record-item">'+
-      '<div class="disc-icon '+cls[i%5]+'"></div>'+
+      '<div class="disc-icon '+cls[gi%5]+'"></div>'+
       '<div class="record-info">'+
         '<div class="record-artist">'+esc(r.artist)+'</div>'+
         '<div class="record-title">'+esc(r.title)+'</div>'+
@@ -313,23 +333,68 @@ function renderList(list){
         ((r.country||r.edition)?'<div class="record-meta">'+(r.country?'<span class="tag">'+esc(r.country)+'</span>':'')+(r.edition?'<span class="tag">'+esc(r.edition)+'</span>':'')+'</div>':'')+'</div>'+
       '<button class="delete-btn" data-id="'+r.id+'">✕</button></div>';
   }).join('');
-  el.querySelectorAll('.delete-btn').forEach(function(b){ b.addEventListener('click',function(){ deleteRecord(this.dataset.id); }); });
+  el.querySelectorAll('.delete-btn').forEach(function(b){
+    b.addEventListener('click', function(){ deleteRecord(this.dataset.id); });
+  });
+}
+
+function renderPagination(totalPages){
+  var pg = document.getElementById('pagination');
+  if (totalPages <= 1) { pg.innerHTML=''; return; }
+
+  var html = '<div class="pagination">';
+
+  // Prev button
+  html += '<button class="page-btn" id="pg-prev" '+(currentPage===1?'disabled':'')+'>&lsaquo;</button>';
+
+  // Page number buttons — show up to 7 with ellipsis
+  var pages = getPageRange(currentPage, totalPages);
+  pages.forEach(function(p){
+    if (p === '…') {
+      html += '<span class="page-info">…</span>';
+    } else {
+      html += '<button class="page-btn'+(p===currentPage?' active':'')+'" data-page="'+p+'">'+p+'</button>';
+    }
+  });
+
+  // Next button
+  html += '<button class="page-btn" id="pg-next" '+(currentPage===totalPages?'disabled':'')+'>&rsaquo;</button>';
+  html += '</div>';
+
+  pg.innerHTML = html;
+
+  pg.querySelector('#pg-prev').addEventListener('click', function(){ if(currentPage>1){currentPage--;renderPage();scrollToList();} });
+  pg.querySelector('#pg-next').addEventListener('click', function(){ if(currentPage<totalPages){currentPage++;renderPage();scrollToList();} });
+  pg.querySelectorAll('.page-btn[data-page]').forEach(function(btn){
+    btn.addEventListener('click', function(){ currentPage=parseInt(this.dataset.page); renderPage(); scrollToList(); });
+  });
+}
+
+function getPageRange(current, total) {
+  if (total <= 7) {
+    var pages = [];
+    for (var i=1;i<=total;i++) pages.push(i);
+    return pages;
+  }
+  var result = [1];
+  if (current > 3) result.push('…');
+  for (var p = Math.max(2, current-1); p <= Math.min(total-1, current+1); p++) result.push(p);
+  if (current < total - 2) result.push('…');
+  result.push(total);
+  return result;
+}
+
+function scrollToList(){
+  document.querySelector('.sort-bar').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ── Search & Sort ─────────────────────────────────────────────
 document.getElementById('search-input').addEventListener('input', applySort);
-
 document.getElementById('sort-alpha').addEventListener('click',function(){
-  sortMode='alpha';
-  this.classList.add('active');
-  document.getElementById('sort-recent').classList.remove('active');
-  applySort();
+  sortMode='alpha'; this.classList.add('active'); document.getElementById('sort-recent').classList.remove('active'); applySort();
 });
 document.getElementById('sort-recent').addEventListener('click',function(){
-  sortMode='recent';
-  this.classList.add('active');
-  document.getElementById('sort-alpha').classList.remove('active');
-  applySort();
+  sortMode='recent'; this.classList.add('active'); document.getElementById('sort-alpha').classList.remove('active'); applySort();
 });
 
 // ── Artist autocomplete ───────────────────────────────────────
@@ -338,10 +403,7 @@ var acDrop  = document.getElementById('artist-dropdown');
 
 function acMatches(q){
   var seen={},out=[];
-  records.forEach(function(r){
-    var k=r.artist.toLowerCase();
-    if(r.artist&&!seen[k]&&k.indexOf(q.toLowerCase())===0){seen[k]=1;out.push(r.artist);}
-  });
+  records.forEach(function(r){ var k=r.artist.toLowerCase(); if(r.artist&&!seen[k]&&k.indexOf(q.toLowerCase())===0){seen[k]=1;out.push(r.artist);} });
   return out.sort(function(a,b){return a.toLowerCase().localeCompare(b.toLowerCase());});
 }
 function acShow(matches){
@@ -359,7 +421,7 @@ function acSelect(val){ acInput.value=val; acHide(); document.getElementById('m-
 
 acInput.addEventListener('input',function(){ var q=this.value.trim(); if(!q){acHide();return;} acShow(acMatches(q)); });
 acInput.addEventListener('focus',function(){ var q=this.value.trim(); if(q) acShow(acMatches(q)); });
-acInput.addEventListener('blur',function(){ setTimeout(function(){ acHide(); },300); });
+acInput.addEventListener('blur',function(){ setTimeout(acHide,300); });
 document.addEventListener('touchstart',function(e){ if(!acDrop.contains(e.target)&&e.target!==acInput) acHide(); },{passive:true});
 document.addEventListener('mousedown',function(e){ if(!acDrop.contains(e.target)&&e.target!==acInput) acHide(); });
 acInput.addEventListener('keydown',function(e){
@@ -400,7 +462,6 @@ async function deleteRecord(id){
   }catch(e){setSyncStatus('err','Delete failed: '+e.message);showStatus('Could not remove — check connection.','error');}
 }
 
-// ── Manual save ───────────────────────────────────────────────
 document.getElementById('manual-save-btn').addEventListener('click',async function(){
   var artist=document.getElementById('m-artist').value.trim();
   var title=document.getElementById('m-title').value.trim();
@@ -424,10 +485,7 @@ function togglePanel(id){
   if(isHidden){panel.classList.remove('hidden');if(id==='barcode-panel')startScanner();}
   else{if(id==='barcode-panel')stopScanner();}
 }
-function closePanel(id){
-  document.getElementById(id).classList.add('hidden');
-  if(id==='barcode-panel')stopScanner();
-}
+function closePanel(id){ document.getElementById(id).classList.add('hidden'); if(id==='barcode-panel')stopScanner(); }
 document.getElementById('btn-barcode').addEventListener('click',function(){togglePanel('barcode-panel');});
 document.getElementById('btn-manual').addEventListener('click',function(){togglePanel('manual-panel');});
 document.getElementById('close-barcode').addEventListener('click',function(){closePanel('barcode-panel');});
@@ -437,12 +495,9 @@ document.getElementById('close-manual').addEventListener('click',function(){clos
 document.getElementById('manual-barcode-btn').addEventListener('click',function(){
   var code=document.getElementById('manual-barcode').value.trim();
   if(!code){showStatus('Enter a barcode number first.','error');return;}
-  stopScanner(); // stop camera if running
-  lookupBarcode(code);
+  stopScanner(); lookupBarcode(code);
 });
-document.getElementById('manual-barcode').addEventListener('keydown',function(e){
-  if(e.key==='Enter'){ document.getElementById('manual-barcode-btn').click(); }
-});
+document.getElementById('manual-barcode').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('manual-barcode-btn').click(); });
 
 // ── Scanner ───────────────────────────────────────────────────
 function startScanner(){
@@ -493,8 +548,7 @@ async function lookupBarcode(code){
     if(data.results&&data.results.length>0){
       var top=data.results[0];
       var parts=(top.title||'').split(' - ');
-      var artist=parts[0]||'';
-      var title=parts.slice(1).join(' - ')||top.title||'';
+      var artist=parts[0]||''; var title=parts.slice(1).join(' - ')||top.title||'';
       var cover=(top.cover_image&&top.cover_image.indexOf('spacer')===-1)?top.cover_image:'';
       barcodeData={artist:artist,title:title};
       var re=document.getElementById('barcode-result');
@@ -505,11 +559,9 @@ async function lookupBarcode(code){
       document.getElementById('barcode-form').classList.remove('hidden');
       s.textContent='Found! Add optional details below.';
     }else{
-      s.textContent='Barcode not found — try entering manually above or add the record manually.';
+      s.textContent='Barcode not found — try entering it manually or add the record manually.';
     }
-  }catch(e){
-    s.textContent='Lookup failed — check your connection.';
-  }
+  }catch(e){ s.textContent='Lookup failed — check your connection.'; }
 }
 
 document.getElementById('bc-save-btn').addEventListener('click',async function(){
@@ -520,10 +572,7 @@ document.getElementById('bc-save-btn').addEventListener('click',async function()
   var ok=await addRecord(barcodeData.artist,barcodeData.title,country,edition,notes);
   if(ok){
     showStatus('Added: '+barcodeData.artist+' — '+barcodeData.title,'success');
-    document.getElementById('bc-country').value='';
-    document.getElementById('bc-edition').value='';
-    document.getElementById('bc-notes').value='';
-    document.getElementById('manual-barcode').value='';
+    ['bc-country','bc-edition','bc-notes','manual-barcode'].forEach(function(id){document.getElementById(id).value='';});
     barcodeData=null; closePanel('barcode-panel');
   }
 });
