@@ -43,42 +43,57 @@
   .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 1.25rem; }
   .panel-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid var(--border); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; justify-content: space-between; }
   .close-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 18px; line-height: 1; padding: 0; }
-  .panel-body { padding: 1.25rem; overflow: visible; }
+  .panel-body { padding: 1.25rem; }
   .form-group { margin-bottom: 1rem; }
   .form-group label { display: block; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
-  .form-group input { width: 100%; padding: 0.625rem 0.875rem; font-family: 'DM Mono', monospace; font-size: 13px; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; color: var(--ink); outline: none; }
-  .form-group input:focus { border-color: rgba(26,18,8,0.4); background: #fff; }
+  .form-group input, .form-group textarea { width: 100%; padding: 0.625rem 0.875rem; font-family: 'DM Mono', monospace; font-size: 13px; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; color: var(--ink); outline: none; }
+  .form-group textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+  .form-group input:focus, .form-group textarea:focus { border-color: rgba(26,18,8,0.4); background: #fff; }
   .form-row { display: flex; gap: 10px; }
   .form-row .form-group { flex: 1; }
   .submit-btn { width: 100%; padding: 0.75rem; margin-top: 1.25rem; font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: 0.06em; background: var(--groove); color: var(--cream); border: none; border-radius: 8px; cursor: pointer; }
   .submit-btn:hover { background: #1a1208; }
+
+  /* Barcode input row */
+  .barcode-input-row { display: flex; gap: 8px; margin-bottom: 1rem; }
+  .barcode-input-row input { flex: 1; padding: 0.625rem 0.875rem; font-family: 'DM Mono', monospace; font-size: 13px; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; color: var(--ink); outline: none; }
+  .barcode-input-row input:focus { border-color: rgba(26,18,8,0.4); background: #fff; }
+  .barcode-lookup-btn { padding: 0.625rem 1rem; font-family: 'DM Mono', monospace; font-size: 12px; background: var(--groove); color: var(--cream); border: none; border-radius: 6px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .barcode-lookup-btn:hover { background: #1a1208; }
+  .barcode-divider { text-align: center; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin: 1rem 0; display: flex; align-items: center; gap: 10px; }
+  .barcode-divider::before, .barcode-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* Autocomplete */
   .ac-wrap { position: relative; }
-  .ac-dropdown {
-    display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0; z-index: 9999;
-    background: var(--card-bg); border: 1px solid rgba(26,18,8,0.3); border-radius: 6px;
-    max-height: 200px; overflow-y: auto; box-shadow: 0 6px 20px rgba(26,18,8,0.15);
-  }
+  .ac-dropdown { display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0; z-index: 9999; background: var(--card-bg); border: 1px solid rgba(26,18,8,0.3); border-radius: 6px; max-height: 200px; overflow-y: auto; box-shadow: 0 6px 20px rgba(26,18,8,0.15); }
   .ac-dropdown.open { display: block; }
   .ac-item { padding: 0.7rem 0.875rem; font-size: 13px; font-family: 'DM Mono', monospace; color: var(--ink); cursor: pointer; border-bottom: 1px solid var(--border); }
   .ac-item:last-child { border-bottom: none; }
   .ac-item.highlighted, .ac-item:hover { background: var(--warm); }
+
   #scanner-wrap { position: relative; background: #000; border-radius: 8px; overflow: hidden; width: 100%; aspect-ratio: 4/3; margin-bottom: 1rem; }
   #scanner-video { width: 100%; height: 100%; object-fit: cover; display: block; }
   .scanner-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 72%; height: 28%; border: 2px solid rgba(255,255,255,0.7); border-radius: 4px; box-shadow: 0 0 0 1000px rgba(0,0,0,0.5); pointer-events: none; }
   .scanner-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--label-red); animation: scan 2s ease-in-out infinite; }
   @keyframes scan { 0%,100%{top:8%} 50%{top:88%} }
   .scanner-status { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 0.75rem; min-height: 20px; }
-  .record-item { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+
+  /* Sort bar */
+  .sort-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
+  .sort-bar span { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); flex: 1; }
+  .sort-btn { font-family: 'DM Mono', monospace; font-size: 10px; padding: 3px 9px; border-radius: 5px; border: 1px solid var(--border); background: none; cursor: pointer; color: var(--muted); }
+  .sort-btn.active { background: var(--groove); color: var(--cream); border-color: var(--groove); }
+
+  .record-item { display: flex; align-items: flex-start; gap: 1rem; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--border); transition: background 0.1s; }
   .record-item:last-child { border-bottom: none; }
   .record-item:hover { background: #faf8f3; }
-  .record-thumb { width: 48px; height: 48px; border-radius: 4px; flex-shrink: 0; background: var(--warm); overflow: hidden; display: flex; align-items: center; justify-content: center; }
-  .record-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .disc-fallback { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-  .disc-fallback::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--cream); }
-  .disc-fallback.c1{background:#8B2635}.disc-fallback.c2{background:#1a3a5c}.disc-fallback.c3{background:#2d5a27}.disc-fallback.c4{background:#5a3a1a}.disc-fallback.c5{background:#3a1a5a}
+  .disc-icon { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+  .disc-icon::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--cream); }
+  .disc-icon.c1{background:#8B2635}.disc-icon.c2{background:#1a3a5c}.disc-icon.c3{background:#2d5a27}.disc-icon.c4{background:#5a3a1a}.disc-icon.c5{background:#3a1a5a}
   .record-info { flex: 1; min-width: 0; }
   .record-artist { font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--groove); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .record-title { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .record-notes { font-size: 11px; color: var(--muted); margin-top: 4px; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .record-meta { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
   .tag { font-size: 10px; padding: 2px 7px; border-radius: 3px; background: var(--warm); color: var(--muted); }
   .delete-btn { background: none; border: none; cursor: pointer; color: var(--muted); opacity: 0; transition: opacity 0.15s; padding: 4px; font-size: 14px; flex-shrink: 0; }
@@ -95,7 +110,6 @@
   .lookup-cover { width: 52px; height: 52px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
   .lookup-text strong { display: block; font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--groove); }
   .lookup-text span { color: var(--muted); font-size: 12px; }
-  .section-title { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between; }
   .export-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; color: var(--muted); }
   .export-btn:hover { background: var(--warm); color: var(--ink); }
   .hidden { display: none !important; }
@@ -124,7 +138,7 @@
 
   <div class="search-bar">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#1a1208" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="#1a1208" stroke-width="1.5" stroke-linecap="round"/></svg>
-    <input type="text" id="search-input" placeholder="Search artist or title…">
+    <input type="text" id="search-input" placeholder="Search artist, title or notes…">
   </div>
 
   <div class="action-row">
@@ -132,9 +146,17 @@
     <button class="btn primary" id="btn-manual"><span class="btn-icon">✏️</span><span class="btn-label">Add manually</span></button>
   </div>
 
+  <!-- Barcode panel -->
   <div class="panel hidden" id="barcode-panel">
     <div class="panel-header">Barcode scanner <button class="close-btn" id="close-barcode">×</button></div>
     <div class="panel-body">
+      <!-- Manual barcode entry -->
+      <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Enter barcode manually</div>
+      <div class="barcode-input-row">
+        <input type="text" id="manual-barcode" placeholder="e.g. 5099749408029" inputmode="numeric">
+        <button class="barcode-lookup-btn" id="manual-barcode-btn">Look up</button>
+      </div>
+      <div class="barcode-divider">or scan with camera</div>
       <div id="scanner-status" class="scanner-status">Initialising camera…</div>
       <div id="scanner-wrap">
         <video id="scanner-video" autoplay playsinline muted></video>
@@ -146,26 +168,29 @@
           <div class="form-group"><label>Country (optional)</label><input type="text" id="bc-country" placeholder="e.g. UK, US, DE"></div>
           <div class="form-group"><label>Edition (optional)</label><input type="text" id="bc-edition" placeholder="e.g. Original, Repress"></div>
         </div>
+        <div class="form-group"><label>Notes (optional)</label><textarea id="bc-notes" placeholder="e.g. Tatsuro Yamashita, Japanese press, coloured vinyl…"></textarea></div>
         <button class="submit-btn" id="bc-save-btn">Add to catalogue</button>
       </div>
     </div>
   </div>
 
+  <!-- Manual panel -->
   <div class="panel hidden" id="manual-panel" style="overflow:visible">
     <div class="panel-header">Add record manually <button class="close-btn" id="close-manual">×</button></div>
     <div class="panel-body" style="overflow:visible">
       <div class="form-group">
         <label>Artist *</label>
         <div class="ac-wrap">
-          <input type="text" id="m-artist" placeholder="e.g. David Bowie" autocomplete="off">
+          <input type="text" id="m-artist" placeholder="e.g. 山下達郎" autocomplete="off">
           <div class="ac-dropdown" id="artist-dropdown"></div>
         </div>
       </div>
-      <div class="form-group"><label>Title *</label><input type="text" id="m-title" placeholder="e.g. Ziggy Stardust"></div>
+      <div class="form-group"><label>Title *</label><input type="text" id="m-title" placeholder="e.g. For You"></div>
       <div class="form-row">
-        <div class="form-group"><label>Country (optional)</label><input type="text" id="m-country" placeholder="e.g. UK"></div>
+        <div class="form-group"><label>Country (optional)</label><input type="text" id="m-country" placeholder="e.g. JP"></div>
         <div class="form-group"><label>Edition (optional)</label><input type="text" id="m-edition" placeholder="e.g. Original"></div>
       </div>
+      <div class="form-group"><label>Notes (optional)</label><textarea id="m-notes" placeholder="e.g. Tatsuro Yamashita — romanji, coloured vinyl, promo copy…"></textarea></div>
       <button class="submit-btn" id="manual-save-btn">Add to catalogue</button>
     </div>
   </div>
@@ -173,8 +198,10 @@
   <div id="status-area"></div>
 
   <div>
-    <div class="section-title">
+    <div class="sort-bar">
       <span id="list-label">Collection</span>
+      <button class="sort-btn active" id="sort-alpha" title="Sort A–Z">A–Z</button>
+      <button class="sort-btn" id="sort-recent" title="Sort by recently added">Recent</button>
       <button class="export-btn" id="export-btn">Export CSV</button>
     </div>
     <div class="panel" style="overflow:hidden">
@@ -195,7 +222,8 @@ var codeReader  = null;
 var scanning    = false;
 var lastScanned = null;
 var saving      = false;
-var acOpen      = false; // whether dropdown is currently shown
+var sortMode    = 'alpha'; // 'alpha' | 'recent'
+var acOpen      = false;
 
 function setSyncStatus(state, msg) {
   document.getElementById('sync-dot').className = 'sync-dot'+(state?' '+state:'');
@@ -226,9 +254,9 @@ async function init() {
     var rows = data.values||[];
     var hasHeader = rows.length>0&&rows[0][0]&&rows[0][0].toLowerCase()==='artist';
     var dataRows = hasHeader?rows.slice(1):rows;
-    if (rows.length===0) await scriptCall({action:'append',row:JSON.stringify(['Artist','Title','Country','Edition','Cover'])});
+    if (rows.length===0) await scriptCall({action:'append',row:JSON.stringify(['Artist','Title','Country','Edition','Notes'])});
     records = dataRows
-      .map(function(r,i){ return {id:'r'+i,sheetRow:i,artist:r[0]||'',title:r[1]||'',country:r[2]||'',edition:r[3]||'',cover:r[4]||''}; })
+      .map(function(r,i){ return {id:'r'+i,sheetRow:i,artist:r[0]||'',title:r[1]||'',country:r[2]||'',edition:r[3]||'',notes:r[4]||''}; })
       .filter(function(r){ return r.artist||r.title; });
     setSyncStatus('ok','Synced · '+records.length+' records');
     renderAll();
@@ -239,7 +267,8 @@ async function init() {
 }
 
 // ── Render ────────────────────────────────────────────────────
-function renderAll(){ updateStats(); renderList(records); }
+function renderAll(){ updateStats(); applySort(); }
+
 function updateStats(){
   document.getElementById('total-count').textContent=records.length;
   var a={};records.forEach(function(r){a[r.artist.toLowerCase()]=1;});
@@ -247,6 +276,25 @@ function updateStats(){
   var c={};records.filter(function(r){return r.country;}).forEach(function(r){c[r.country]=1;});
   document.getElementById('country-count').textContent=Object.keys(c).length||'—';
 }
+
+function applySort(){
+  var q = document.getElementById('search-input').value.toLowerCase().trim();
+  var list = q ? records.filter(function(r){
+    return r.artist.toLowerCase().indexOf(q)>=0
+        || r.title.toLowerCase().indexOf(q)>=0
+        || (r.notes&&r.notes.toLowerCase().indexOf(q)>=0);
+  }) : records.slice();
+
+  if (sortMode==='alpha') {
+    list.sort(function(a,b){ return a.artist.toLowerCase().localeCompare(b.artist.toLowerCase())||a.title.toLowerCase().localeCompare(b.title.toLowerCase()); });
+  }
+  // 'recent' = insertion order (natural sheet order, already correct)
+
+  var label = document.getElementById('list-label');
+  label.textContent = q ? 'Results ('+list.length+')' : 'Collection';
+  renderList(list);
+}
+
 function renderList(list){
   var el=document.getElementById('records-list');
   if(!list.length){
@@ -256,21 +304,35 @@ function renderList(list){
   }
   var cls=['c1','c2','c3','c4','c5'];
   el.innerHTML=list.map(function(r,i){
-    var t=r.cover?'<div class="record-thumb"><img src="'+esc(r.cover)+'" alt="" onerror="this.parentNode.innerHTML=\'<div class=&quot;disc-fallback '+cls[i%5]+'&quot;></div>\'"></div>':'<div class="record-thumb"><div class="disc-fallback '+cls[i%5]+'"></div></div>';
-    return '<div class="record-item">'+t+'<div class="record-info"><div class="record-artist">'+esc(r.artist)+'</div><div class="record-title">'+esc(r.title)+'</div>'+((r.country||r.edition)?'<div class="record-meta">'+(r.country?'<span class="tag">'+esc(r.country)+'</span>':'')+(r.edition?'<span class="tag">'+esc(r.edition)+'</span>':'')+'</div>':'')+'</div><button class="delete-btn" data-id="'+r.id+'">✕</button></div>';
+    return '<div class="record-item">'+
+      '<div class="disc-icon '+cls[i%5]+'"></div>'+
+      '<div class="record-info">'+
+        '<div class="record-artist">'+esc(r.artist)+'</div>'+
+        '<div class="record-title">'+esc(r.title)+'</div>'+
+        (r.notes?'<div class="record-notes">'+esc(r.notes)+'</div>':'')+
+        ((r.country||r.edition)?'<div class="record-meta">'+(r.country?'<span class="tag">'+esc(r.country)+'</span>':'')+(r.edition?'<span class="tag">'+esc(r.edition)+'</span>':'')+'</div>':'')+'</div>'+
+      '<button class="delete-btn" data-id="'+r.id+'">✕</button></div>';
   }).join('');
   el.querySelectorAll('.delete-btn').forEach(function(b){ b.addEventListener('click',function(){ deleteRecord(this.dataset.id); }); });
 }
 
-document.getElementById('search-input').addEventListener('input',function(){
-  var q=this.value.toLowerCase().trim();
-  var lb=document.getElementById('list-label');
-  if(!q){lb.textContent='Collection';renderList(records);return;}
-  var f=records.filter(function(r){return r.artist.toLowerCase().indexOf(q)>=0||r.title.toLowerCase().indexOf(q)>=0;});
-  lb.textContent='Results ('+f.length+')';renderList(f);
+// ── Search & Sort ─────────────────────────────────────────────
+document.getElementById('search-input').addEventListener('input', applySort);
+
+document.getElementById('sort-alpha').addEventListener('click',function(){
+  sortMode='alpha';
+  this.classList.add('active');
+  document.getElementById('sort-recent').classList.remove('active');
+  applySort();
+});
+document.getElementById('sort-recent').addEventListener('click',function(){
+  sortMode='recent';
+  this.classList.add('active');
+  document.getElementById('sort-alpha').classList.remove('active');
+  applySort();
 });
 
-// ── Autocomplete ──────────────────────────────────────────────
+// ── Artist autocomplete ───────────────────────────────────────
 var acInput = document.getElementById('m-artist');
 var acDrop  = document.getElementById('artist-dropdown');
 
@@ -282,59 +344,24 @@ function acMatches(q){
   });
   return out.sort(function(a,b){return a.toLowerCase().localeCompare(b.toLowerCase());});
 }
-
 function acShow(matches){
   if(!matches.length){acHide();return;}
   acDrop.innerHTML=matches.map(function(a){return '<div class="ac-item">'+esc(a)+'</div>';}).join('');
   acDrop.querySelectorAll('.ac-item').forEach(function(item){
-    // touchstart + touchend for mobile, mousedown for desktop
-    // using touchend+preventDefault stops the blur from firing first on iOS
     item.addEventListener('touchstart',function(e){e.stopPropagation();},{passive:true});
-    item.addEventListener('touchend',function(e){
-      e.preventDefault();e.stopPropagation();
-      acSelect(this.textContent);
-    });
-    item.addEventListener('mousedown',function(e){
-      e.preventDefault();
-      acSelect(this.textContent);
-    });
+    item.addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();acSelect(this.textContent);});
+    item.addEventListener('mousedown',function(e){e.preventDefault();acSelect(this.textContent);});
   });
-  acDrop.classList.add('open');
-  acOpen=true;
+  acDrop.classList.add('open'); acOpen=true;
 }
-
 function acHide(){ acDrop.classList.remove('open'); acOpen=false; }
+function acSelect(val){ acInput.value=val; acHide(); document.getElementById('m-title').focus(); }
 
-function acSelect(val){
-  acInput.value=val;
-  acHide();
-  document.getElementById('m-title').focus();
-}
-
-acInput.addEventListener('input',function(){
-  var q=this.value.trim();
-  if(!q){acHide();return;}
-  acShow(acMatches(q));
-});
-
-acInput.addEventListener('focus',function(){
-  var q=this.value.trim();
-  if(q) acShow(acMatches(q));
-});
-
-// Only hide on blur if the dropdown isn't being interacted with
-acInput.addEventListener('blur',function(){
-  setTimeout(function(){ if(!acOpen) return; acHide(); },300);
-});
-
-// Close dropdown if user taps elsewhere on the page
-document.addEventListener('touchstart',function(e){
-  if(!acDrop.contains(e.target)&&e.target!==acInput) acHide();
-},{passive:true});
-document.addEventListener('mousedown',function(e){
-  if(!acDrop.contains(e.target)&&e.target!==acInput) acHide();
-});
-
+acInput.addEventListener('input',function(){ var q=this.value.trim(); if(!q){acHide();return;} acShow(acMatches(q)); });
+acInput.addEventListener('focus',function(){ var q=this.value.trim(); if(q) acShow(acMatches(q)); });
+acInput.addEventListener('blur',function(){ setTimeout(function(){ acHide(); },300); });
+document.addEventListener('touchstart',function(e){ if(!acDrop.contains(e.target)&&e.target!==acInput) acHide(); },{passive:true});
+document.addEventListener('mousedown',function(e){ if(!acDrop.contains(e.target)&&e.target!==acInput) acHide(); });
 acInput.addEventListener('keydown',function(e){
   var items=acDrop.querySelectorAll('.ac-item');
   var active=acDrop.querySelector('.ac-item.highlighted');
@@ -346,44 +373,46 @@ acInput.addEventListener('keydown',function(e){
 });
 
 // ── Add / Delete ──────────────────────────────────────────────
-async function addRecord(artist,title,country,edition,cover){
+async function addRecord(artist,title,country,edition,notes){
   if(saving)return false;
-  country=country||'';edition=edition||'';cover=cover||'';
+  country=country||'';edition=edition||'';notes=notes||'';
   var dup=records.filter(function(r){return r.artist.toLowerCase()===artist.toLowerCase()&&r.title.toLowerCase()===title.toLowerCase();})[0];
   if(dup){showStatus('Already in catalogue: '+artist+' — '+title,'error');return false;}
-  saving=true;setSyncStatus('busy','Saving…');
+  saving=true; setSyncStatus('busy','Saving…');
   try{
-    await scriptCall({action:'append',row:JSON.stringify([artist,title,country,edition,cover])});
-    records.push({id:'r'+records.length,sheetRow:records.length,artist:artist,title:title,country:country,edition:edition,cover:cover});
+    await scriptCall({action:'append',row:JSON.stringify([artist,title,country,edition,notes])});
+    records.push({id:'r'+records.length,sheetRow:records.length,artist:artist,title:title,country:country,edition:edition,notes:notes});
     setSyncStatus('ok','Synced · '+records.length+' records');
-    renderAll();saving=false;return true;
+    renderAll(); saving=false; return true;
   }catch(e){saving=false;setSyncStatus('err','Save failed: '+e.message);showStatus('Could not save: '+e.message,'error');return false;}
 }
 
 async function deleteRecord(id){
-  var idx=-1;records.forEach(function(r,i){if(r.id===id)idx=i;});
+  var idx=-1; records.forEach(function(r,i){if(r.id===id)idx=i;});
   if(idx===-1)return;
   var rec=records[idx];
   if(!confirm('Remove "'+rec.artist+' — '+rec.title+'"?'))return;
   setSyncStatus('busy','Removing…');
   try{
     await scriptCall({action:'delete',rowIndex:rec.sheetRow});
-    records.splice(idx,1);records.forEach(function(r,i){r.id='r'+i;r.sheetRow=i;});
-    setSyncStatus('ok','Synced · '+records.length+' records');renderAll();
+    records.splice(idx,1); records.forEach(function(r,i){r.id='r'+i;r.sheetRow=i;});
+    setSyncStatus('ok','Synced · '+records.length+' records'); renderAll();
   }catch(e){setSyncStatus('err','Delete failed: '+e.message);showStatus('Could not remove — check connection.','error');}
 }
 
+// ── Manual save ───────────────────────────────────────────────
 document.getElementById('manual-save-btn').addEventListener('click',async function(){
   var artist=document.getElementById('m-artist').value.trim();
   var title=document.getElementById('m-title').value.trim();
   var country=document.getElementById('m-country').value.trim();
   var edition=document.getElementById('m-edition').value.trim();
+  var notes=document.getElementById('m-notes').value.trim();
   if(!artist||!title){showStatus('Artist and title are required.','error');return;}
-  var ok=await addRecord(artist,title,country,edition,'');
+  var ok=await addRecord(artist,title,country,edition,notes);
   if(ok){
     showStatus('Added: '+artist+' — '+title,'success');
-    ['m-artist','m-title','m-country','m-edition'].forEach(function(id){document.getElementById(id).value='';});
-    acHide();closePanel('manual-panel');
+    ['m-artist','m-title','m-country','m-edition','m-notes'].forEach(function(id){document.getElementById(id).value='';});
+    acHide(); closePanel('manual-panel');
   }
 });
 
@@ -403,6 +432,17 @@ document.getElementById('btn-barcode').addEventListener('click',function(){toggl
 document.getElementById('btn-manual').addEventListener('click',function(){togglePanel('manual-panel');});
 document.getElementById('close-barcode').addEventListener('click',function(){closePanel('barcode-panel');});
 document.getElementById('close-manual').addEventListener('click',function(){closePanel('manual-panel');});
+
+// ── Manual barcode lookup ─────────────────────────────────────
+document.getElementById('manual-barcode-btn').addEventListener('click',function(){
+  var code=document.getElementById('manual-barcode').value.trim();
+  if(!code){showStatus('Enter a barcode number first.','error');return;}
+  stopScanner(); // stop camera if running
+  lookupBarcode(code);
+});
+document.getElementById('manual-barcode').addEventListener('keydown',function(e){
+  if(e.key==='Enter'){ document.getElementById('manual-barcode-btn').click(); }
+});
 
 // ── Scanner ───────────────────────────────────────────────────
 function startScanner(){
@@ -432,7 +472,7 @@ function startScanner(){
         });
       }).catch(function(err){document.getElementById('scanner-status').textContent='Camera error: '+(err.message||'permission denied');scanning=false;});
     }).catch(function(err){document.getElementById('scanner-status').textContent='Camera error: '+(err.message||'permission denied');scanning=false;});
-  }catch(err){document.getElementById('scanner-status').textContent='Scanner unavailable — enter manually.';scanning=false;}
+  }catch(err){document.getElementById('scanner-status').textContent='Scanner unavailable — enter barcode manually above.';scanning=false;}
 }
 
 function stopScanner(){
@@ -445,6 +485,8 @@ function stopScanner(){
 async function lookupBarcode(code){
   var s=document.getElementById('scanner-status');
   s.innerHTML='<span class="spinner"></span> Looking up '+code+'…';
+  document.getElementById('barcode-result').classList.add('hidden');
+  document.getElementById('barcode-form').classList.add('hidden');
   try{
     var res=await fetch('https://api.discogs.com/database/search?barcode='+code,{headers:{'User-Agent':'VinylCatalogue/1.0'}});
     var data=await res.json();
@@ -454,20 +496,19 @@ async function lookupBarcode(code){
       var artist=parts[0]||'';
       var title=parts.slice(1).join(' - ')||top.title||'';
       var cover=(top.cover_image&&top.cover_image.indexOf('spacer')===-1)?top.cover_image:'';
-      barcodeData={artist:artist,title:title,cover:cover};
+      barcodeData={artist:artist,title:title};
       var re=document.getElementById('barcode-result');
       re.className='lookup-result';
-      re.innerHTML=(cover?'<img class="lookup-cover" src="'+esc(cover)+'" alt="">':'')+'<div class="lookup-text"><strong>'+esc(artist)+' — '+esc(title)+'</strong><span>via Discogs · '+code+'</span></div>';
+      re.innerHTML=(cover?'<img class="lookup-cover" src="'+esc(cover)+'" alt="" onerror="this.style.display=\'none\'">':'')+
+        '<div class="lookup-text"><strong>'+esc(artist)+' — '+esc(title)+'</strong><span>via Discogs · '+code+'</span></div>';
       re.classList.remove('hidden');
       document.getElementById('barcode-form').classList.remove('hidden');
       s.textContent='Found! Add optional details below.';
     }else{
-      s.textContent='Barcode not found — enter manually.';
-      setTimeout(function(){closePanel('barcode-panel');togglePanel('manual-panel');},1200);
+      s.textContent='Barcode not found — try entering manually above or add the record manually.';
     }
   }catch(e){
-    s.textContent='Lookup failed — enter manually.';
-    setTimeout(function(){closePanel('barcode-panel');togglePanel('manual-panel');},1200);
+    s.textContent='Lookup failed — check your connection.';
   }
 }
 
@@ -475,13 +516,22 @@ document.getElementById('bc-save-btn').addEventListener('click',async function()
   if(!barcodeData||typeof barcodeData!=='object')return;
   var country=document.getElementById('bc-country').value.trim();
   var edition=document.getElementById('bc-edition').value.trim();
-  var ok=await addRecord(barcodeData.artist,barcodeData.title,country,edition,barcodeData.cover);
-  if(ok){showStatus('Added: '+barcodeData.artist+' — '+barcodeData.title,'success');document.getElementById('bc-country').value='';document.getElementById('bc-edition').value='';barcodeData=null;closePanel('barcode-panel');}
+  var notes=document.getElementById('bc-notes').value.trim();
+  var ok=await addRecord(barcodeData.artist,barcodeData.title,country,edition,notes);
+  if(ok){
+    showStatus('Added: '+barcodeData.artist+' — '+barcodeData.title,'success');
+    document.getElementById('bc-country').value='';
+    document.getElementById('bc-edition').value='';
+    document.getElementById('bc-notes').value='';
+    document.getElementById('manual-barcode').value='';
+    barcodeData=null; closePanel('barcode-panel');
+  }
 });
 
+// ── Export CSV ────────────────────────────────────────────────
 document.getElementById('export-btn').addEventListener('click',function(){
   if(!records.length){showStatus('Nothing to export yet.','error');return;}
-  var rows=[['Artist','Title','Country','Edition']].concat(records.map(function(r){return[r.artist,r.title,r.country||'',r.edition||''];}));
+  var rows=[['Artist','Title','Country','Edition','Notes']].concat(records.map(function(r){return[r.artist,r.title,r.country||'',r.edition||'',r.notes||''];}));
   var csv=rows.map(function(r){return r.map(function(c){return'"'+c.replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='vinyl_catalogue.csv';a.click();
 });
