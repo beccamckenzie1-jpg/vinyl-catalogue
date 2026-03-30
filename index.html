@@ -57,7 +57,6 @@
   .barcode-input-row input { flex: 1; padding: 0.625rem 0.875rem; font-family: 'DM Mono', monospace; font-size: 13px; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; color: var(--ink); outline: none; }
   .barcode-input-row input:focus { border-color: rgba(26,18,8,0.4); background: #fff; }
   .barcode-lookup-btn { padding: 0.625rem 1rem; font-family: 'DM Mono', monospace; font-size: 12px; background: var(--groove); color: var(--cream); border: none; border-radius: 6px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-  .barcode-lookup-btn:hover { background: #1a1208; }
   .barcode-divider { text-align: center; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin: 1rem 0; display: flex; align-items: center; gap: 10px; }
   .barcode-divider::before, .barcode-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
   .ac-wrap { position: relative; }
@@ -72,8 +71,6 @@
   .scanner-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--label-red); animation: scan 2s ease-in-out infinite; }
   @keyframes scan { 0%,100%{top:8%} 50%{top:88%} }
   .scanner-status { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 0.75rem; min-height: 20px; }
-
-  /* Cover upload */
   .cover-file-input { display: none; }
   .cover-upload-btn { display: flex; align-items: center; gap: 8px; padding: 0.625rem 0.875rem; font-family: 'DM Mono', monospace; font-size: 12px; background: var(--cream); border: 1px dashed rgba(26,18,8,0.3); border-radius: 6px; cursor: pointer; color: var(--muted); width: 100%; justify-content: center; transition: all 0.15s; }
   .cover-upload-btn:hover { background: var(--warm); border-color: rgba(26,18,8,0.5); color: var(--ink); }
@@ -82,22 +79,13 @@
   .cover-preview-info { flex: 1; font-size: 11px; color: var(--muted); }
   .cover-remove-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; padding: 4px; flex-shrink: 0; }
   .cover-remove-btn:hover { color: var(--label-red); }
-
   .sort-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; flex-wrap: wrap; }
   .sort-bar-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); flex: 1; }
   .sort-btn { font-family: 'DM Mono', monospace; font-size: 10px; padding: 3px 9px; border-radius: 5px; border: 1px solid var(--border); background: none; cursor: pointer; color: var(--muted); }
   .sort-btn.active { background: var(--groove); color: var(--cream); border-color: var(--groove); }
   .export-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; color: var(--muted); }
   .export-btn:hover { background: var(--warm); color: var(--ink); }
-  .cover-file-input { display: none; }
-  .cover-upload-btn { display: flex; align-items: center; gap: 8px; padding: 0.625rem 0.875rem; font-family: "DM Mono", monospace; font-size: 12px; background: var(--cream); border: 1px dashed rgba(26,18,8,0.3); border-radius: 6px; cursor: pointer; color: var(--muted); width: 100%; justify-content: center; transition: all 0.15s; }
-  .cover-upload-btn:hover { background: var(--warm); border-color: rgba(26,18,8,0.5); color: var(--ink); }
-  .cover-preview { display: flex; align-items: center; gap: 12px; padding: 0.625rem; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; }
-  .cover-preview img { width: 52px; height: 52px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
-  .cover-preview-info { flex: 1; font-size: 11px; color: var(--muted); }
-  .cover-remove-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; padding: 4px; flex-shrink: 0; }
-  .cover-remove-btn:hover { color: var(--label-red); }
-  .record-item { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  .record-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--border); transition: background 0.1s; }
   .record-item:last-child { border-bottom: none; }
   .record-item:hover { background: #faf8f3; }
   .record-thumb { width: 48px; height: 48px; border-radius: 4px; flex-shrink: 0; background: var(--warm); overflow: hidden; display: flex; align-items: center; justify-content: center; }
@@ -111,13 +99,14 @@
   .record-notes { font-size: 11px; color: var(--muted); margin-top: 3px; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .record-meta { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
   .tag { font-size: 10px; padding: 2px 7px; border-radius: 3px; background: var(--warm); color: var(--muted); }
-  .delete-btn { background: none; border: none; cursor: pointer; color: var(--muted); opacity: 0; transition: opacity 0.15s; padding: 4px; font-size: 14px; flex-shrink: 0; }
-  .record-item:hover .delete-btn { opacity: 1; }
-  .delete-btn:hover { color: var(--label-red); }
-  .edit-btn { background: none; border: none; cursor: pointer; color: var(--muted); opacity: 0.4; transition: opacity 0.15s; padding: 4px; font-size: 15px; flex-shrink: 0; }
-  .record-item:hover .edit-btn { opacity: 1; }
-  .edit-btn:hover { color: var(--groove); opacity: 1; }
-  @media (hover: none) { .edit-btn { opacity: 0.5; } .delete-btn { opacity: 0.5; } }
+  .record-actions { display: flex; gap: 2px; flex-shrink: 0; }
+  .edit-btn, .delete-btn { background: none; border: none; cursor: pointer; color: var(--muted); padding: 6px; font-size: 15px; border-radius: 4px; transition: all 0.15s; }
+  .edit-btn { opacity: 0.45; }
+  .delete-btn { opacity: 0.45; }
+  .edit-btn:hover { color: var(--groove); background: var(--warm); opacity: 1; }
+  .delete-btn:hover { color: var(--label-red); background: #fdecea; opacity: 1; }
+  .record-item:hover .edit-btn, .record-item:hover .delete-btn { opacity: 1; }
+  @media (hover: none) { .edit-btn, .delete-btn { opacity: 0.6; } }
   .empty-state { padding: 3rem 1.5rem; text-align: center; }
   .empty-state .big-disc { width: 80px; height: 80px; border-radius: 50%; background: var(--groove); margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; opacity: 0.15; }
   .empty-state .big-disc::after { content: ''; width: 16px; height: 16px; border-radius: 50%; background: var(--cream); }
@@ -149,19 +138,19 @@
     <p class="subtitle">Your vinyl collection</p>
     <div class="sync-status">
       <div class="sync-dot" id="sync-dot"></div>
-      <span id="sync-label">Connecting…</span>
+      <span id="sync-label">Connecting...</span>
     </div>
   </div>
 
   <div class="stats-row">
-    <div class="stat"><div class="stat-num" id="total-count">—</div><div class="stat-label">Records</div></div>
-    <div class="stat"><div class="stat-num" id="artist-count">—</div><div class="stat-label">Artists</div></div>
-    <div class="stat"><div class="stat-num" id="country-count">—</div><div class="stat-label">Countries</div></div>
+    <div class="stat"><div class="stat-num" id="total-count">--</div><div class="stat-label">Records</div></div>
+    <div class="stat"><div class="stat-num" id="artist-count">--</div><div class="stat-label">Artists</div></div>
+    <div class="stat"><div class="stat-num" id="country-count">--</div><div class="stat-label">Countries</div></div>
   </div>
 
   <div class="search-bar">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#1a1208" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="#1a1208" stroke-width="1.5" stroke-linecap="round"/></svg>
-    <input type="text" id="search-input" placeholder="Search artist, title or notes…">
+    <input type="text" id="search-input" placeholder="Search artist, title or notes...">
   </div>
 
   <div class="action-row">
@@ -171,7 +160,7 @@
 
   <!-- Barcode panel -->
   <div class="panel hidden" id="barcode-panel">
-    <div class="panel-header">Barcode scanner <button class="close-btn" id="close-barcode">×</button></div>
+    <div class="panel-header">Barcode scanner <button class="close-btn" id="close-barcode">x</button></div>
     <div class="panel-body">
       <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Enter barcode manually</div>
       <div class="barcode-input-row">
@@ -179,7 +168,7 @@
         <button class="barcode-lookup-btn" id="manual-barcode-btn">Look up</button>
       </div>
       <div class="barcode-divider">or scan with camera</div>
-      <div id="scanner-status" class="scanner-status">Initialising camera…</div>
+      <div id="scanner-status" class="scanner-status">Initialising camera...</div>
       <div id="scanner-wrap">
         <video id="scanner-video" autoplay playsinline muted></video>
         <div class="scanner-overlay"><div class="scanner-line"></div></div>
@@ -190,16 +179,16 @@
           <div class="form-group"><label>Country (optional)</label><input type="text" id="bc-country" placeholder="e.g. UK, US, JP"></div>
           <div class="form-group"><label>Edition (optional)</label><input type="text" id="bc-edition" placeholder="e.g. Original, Repress"></div>
         </div>
-        <div class="form-group"><label>Notes (optional)</label><textarea id="bc-notes" placeholder="e.g. Tatsuro Yamashita, coloured vinyl…"></textarea></div>
+        <div class="form-group"><label>Notes (optional)</label><textarea id="bc-notes" placeholder="e.g. Tatsuro Yamashita, coloured vinyl..."></textarea></div>
         <div class="form-group">
           <label>Cover image (optional)</label>
           <input type="file" class="cover-file-input" id="bc-cover-input" accept="image/*">
           <div class="cover-preview hidden" id="bc-cover-preview">
             <img id="bc-cover-img" src="" alt="">
             <div class="cover-preview-info">Cover ready to upload</div>
-            <button class="cover-remove-btn" id="bc-cover-remove">×</button>
+            <button type="button" class="cover-remove-btn" id="bc-cover-remove">x</button>
           </div>
-          <button class="cover-upload-btn hidden" id="bc-cover-btn">📷 Add cover photo</button>
+          <button type="button" class="cover-upload-btn" id="bc-cover-btn">📷 Add cover photo</button>
         </div>
         <button class="submit-btn" id="bc-save-btn">Add to catalogue</button>
       </div>
@@ -208,59 +197,56 @@
 
   <!-- Manual panel -->
   <div class="panel hidden" id="manual-panel" style="overflow:visible">
-    <div class="panel-header">Add record manually <button class="close-btn" id="close-manual">×</button></div>
+    <div class="panel-header">Add record manually <button class="close-btn" id="close-manual">x</button></div>
     <div class="panel-body" style="overflow:visible">
       <div class="form-group">
         <label>Artist *</label>
         <div class="ac-wrap">
-          <input type="text" id="m-artist" placeholder="e.g. 山下達郎" autocomplete="off">
+          <input type="text" id="m-artist" placeholder="e.g. David Bowie" autocomplete="off">
           <div class="ac-dropdown" id="artist-dropdown"></div>
         </div>
       </div>
-      <div class="form-group"><label>Title *</label><input type="text" id="m-title" placeholder="e.g. For You"></div>
+      <div class="form-group"><label>Title *</label><input type="text" id="m-title" placeholder="e.g. Ziggy Stardust"></div>
       <div class="form-row">
-        <div class="form-group"><label>Country (optional)</label><input type="text" id="m-country" placeholder="e.g. JP"></div>
+        <div class="form-group"><label>Country (optional)</label><input type="text" id="m-country" placeholder="e.g. UK"></div>
         <div class="form-group"><label>Edition (optional)</label><input type="text" id="m-edition" placeholder="e.g. Original"></div>
       </div>
-      <div class="form-group"><label>Notes (optional)</label><textarea id="m-notes" placeholder="e.g. Tatsuro Yamashita, romanji, promo copy…"></textarea></div>
+      <div class="form-group"><label>Notes (optional)</label><textarea id="m-notes" placeholder="e.g. Tatsuro Yamashita, romanji, promo copy..."></textarea></div>
       <div class="form-group">
         <label>Cover image (optional)</label>
         <input type="file" class="cover-file-input" id="m-cover-input" accept="image/*">
         <div class="cover-preview hidden" id="m-cover-preview">
           <img id="m-cover-img" src="" alt="">
           <div class="cover-preview-info">Cover ready to upload</div>
-          <button class="cover-remove-btn" id="m-cover-remove">×</button>
+          <button type="button" class="cover-remove-btn" id="m-cover-remove">x</button>
         </div>
-        <button class="cover-upload-btn" id="m-cover-btn">📷 Add cover photo</button>
+        <button type="button" class="cover-upload-btn" id="m-cover-btn">📷 Add cover photo</button>
       </div>
       <button class="submit-btn" id="manual-save-btn">Add to catalogue</button>
     </div>
   </div>
 
-
   <!-- Edit panel -->
-  <div class="panel hidden" id="edit-panel">
-    <div class="panel-header">Edit record <button class="close-btn" id="close-edit">×</button></div>
+  <div class="panel hidden" id="edit-panel" style="overflow:visible">
+    <div class="panel-header">Edit record <button class="close-btn" id="close-edit">x</button></div>
     <div class="panel-body" style="overflow:visible">
-      <div class="form-group">
-        <label>Artist *</label>
-        <input type="text" id="e-artist" placeholder="e.g. Charles Mingus">
-      </div>
+      <input type="hidden" id="e-id">
+      <div class="form-group"><label>Artist *</label><input type="text" id="e-artist" placeholder="e.g. Charles Mingus"></div>
       <div class="form-group"><label>Title *</label><input type="text" id="e-title" placeholder="e.g. Mingus Ah Um"></div>
       <div class="form-row">
         <div class="form-group"><label>Country (optional)</label><input type="text" id="e-country" placeholder="e.g. US"></div>
         <div class="form-group"><label>Edition (optional)</label><input type="text" id="e-edition" placeholder="e.g. Original"></div>
       </div>
-      <div class="form-group"><label>Notes (optional)</label><textarea id="e-notes" placeholder="e.g. romanji, coloured vinyl…"></textarea></div>
+      <div class="form-group"><label>Notes (optional)</label><textarea id="e-notes" placeholder="e.g. coloured vinyl, promo copy..."></textarea></div>
       <div class="form-group">
-        <label>Cover image (optional)</label>
+        <label>Cover image</label>
         <input type="file" class="cover-file-input" id="e-cover-input" accept="image/*">
         <div class="cover-preview hidden" id="e-cover-preview">
           <img id="e-cover-img" src="" alt="">
-          <div class="cover-preview-info">Cover ready</div>
-          <button class="cover-remove-btn" id="e-cover-remove">×</button>
+          <div class="cover-preview-info" id="e-cover-info">Current cover</div>
+          <button type="button" class="cover-remove-btn" id="e-cover-remove">x</button>
         </div>
-        <button class="cover-upload-btn" id="e-cover-btn">📷 Change cover photo</button>
+        <button type="button" class="cover-upload-btn" id="e-cover-btn">📷 Add cover photo</button>
       </div>
       <button class="submit-btn" id="edit-save-btn">Save changes</button>
     </div>
@@ -271,13 +257,13 @@
   <div>
     <div class="sort-bar">
       <span class="sort-bar-label" id="list-label">Collection</span>
-      <button class="sort-btn active" id="sort-alpha">A–Z</button>
+      <button class="sort-btn active" id="sort-alpha">A-Z</button>
       <button class="sort-btn" id="sort-recent">Recent</button>
       <button class="export-btn" id="export-btn">Export CSV</button>
     </div>
     <div class="panel" style="overflow:hidden">
       <div id="records-list">
-        <div class="loading-screen"><span class="spinner"></span> Loading your collection…</div>
+        <div class="loading-screen"><span class="spinner"></span> Loading your collection...</div>
       </div>
       <div id="pagination"></div>
     </div>
@@ -286,37 +272,39 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
 <script>
-const SB_URL   = 'https://rakigamlbzjgupqavpdq.supabase.co';
-const SB_KEY   = 'sb_publishable_nCQzN8Ffcqb9-tLdPaNlVw_2dKGIEDk';
-const HEADERS  = { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
-const PAGE_SIZE = 20;
-const MAX_DIM   = 600;  // max px dimension for cover images
-const MAX_BYTES = 80000; // target ~80KB
+var SB_URL    = 'https://rakigamlbzjgupqavpdq.supabase.co';
+var SB_KEY    = 'sb_publishable_nCQzN8Ffcqb9-tLdPaNlVw_2dKGIEDk';
+var HEADERS   = { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
+var PAGE_SIZE = 20;
+var MAX_DIM   = 600;
+var MAX_BYTES = 80000;
 
-var records      = [];
-var barcodeData  = null;
-var codeReader   = null;
-var scanning     = false;
-var lastScanned  = null;
-var saving       = false;
-var sortMode     = 'alpha';
-var currentPage  = 1;
-var filteredList = [];
-var acOpen       = false;
-
-// Pending cover blobs: { bc: Blob|null, m: Blob|null }
+var records       = [];
+var barcodeData   = null;
+var codeReader    = null;
+var scanning      = false;
+var lastScanned   = null;
+var saving        = false;
+var sortMode      = 'alpha';
+var currentPage   = 1;
+var filteredList  = [];
+var acOpen        = false;
 var pendingCovers = { bc: null, m: null, e: null };
+var editingId     = null;
 
-// ── Helpers ───────────────────────────────────────────────────
 function setSyncStatus(state, msg) {
-  document.getElementById('sync-dot').className = 'sync-dot'+(state?' '+state:'');
+  document.getElementById('sync-dot').className = 'sync-dot' + (state ? ' ' + state : '');
   document.getElementById('sync-label').textContent = msg;
 }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function showStatus(msg, type) {
   var el = document.getElementById('status-area');
-  el.innerHTML = '<div class="status-msg '+(type||'info')+'">'+esc(msg)+'</div>';
-  setTimeout(function(){ el.innerHTML=''; }, 4000);
+  el.innerHTML = '<div class="status-msg ' + (type||'info') + '">' + esc(msg) + '</div>';
+  setTimeout(function(){ el.innerHTML = ''; }, 4000);
 }
 
 // ── Image compression ─────────────────────────────────────────
@@ -327,7 +315,6 @@ function compressImage(file) {
       var img = new Image();
       img.onload = function() {
         var w = img.width, h = img.height;
-        // Scale down to MAX_DIM
         if (w > MAX_DIM || h > MAX_DIM) {
           if (w > h) { h = Math.round(h * MAX_DIM / w); w = MAX_DIM; }
           else       { w = Math.round(w * MAX_DIM / h); h = MAX_DIM; }
@@ -335,19 +322,14 @@ function compressImage(file) {
         var canvas = document.createElement('canvas');
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        // Try quality 0.8 first, step down if still too large
         var quality = 0.82;
-        var tryCompress = function() {
+        var attempt = function() {
           canvas.toBlob(function(blob) {
-            if (blob && blob.size > MAX_BYTES && quality > 0.3) {
-              quality -= 0.1;
-              tryCompress();
-            } else {
-              resolve(blob);
-            }
+            if (blob && blob.size > MAX_BYTES && quality > 0.3) { quality -= 0.1; attempt(); }
+            else resolve(blob);
           }, 'image/jpeg', quality);
         };
-        tryCompress();
+        attempt();
       };
       img.onerror = reject;
       img.src = e.target.result;
@@ -359,34 +341,36 @@ function compressImage(file) {
 
 // ── Cover upload UI ───────────────────────────────────────────
 function setupCoverUpload(prefix) {
-  var fileInput = document.getElementById(prefix+'-cover-input');
-  var btn       = document.getElementById(prefix+'-cover-btn');
-  var preview   = document.getElementById(prefix+'-cover-preview');
-  var img       = document.getElementById(prefix+'-cover-img');
-  var removeBtn = document.getElementById(prefix+'-cover-remove');
+  var fileInput = document.getElementById(prefix + '-cover-input');
+  var btn       = document.getElementById(prefix + '-cover-btn');
+  var preview   = document.getElementById(prefix + '-cover-preview');
+  var img       = document.getElementById(prefix + '-cover-img');
+  var removeBtn = document.getElementById(prefix + '-cover-remove');
 
   btn.addEventListener('click', function() { fileInput.click(); });
 
-  fileInput.addEventListener('change', async function() {
+  fileInput.addEventListener('change', function() {
     var file = this.files[0];
     if (!file) return;
-    btn.textContent = '⏳ Compressing…';
+    var origText = btn.textContent;
+    btn.textContent = 'Compressing...';
     btn.disabled = true;
-    try {
-      var blob = await compressImage(file);
+    var self = this;
+    compressImage(file).then(function(blob) {
       pendingCovers[prefix] = blob;
-      var url = URL.createObjectURL(blob);
-      img.src = url;
+      img.src = URL.createObjectURL(blob);
+      var infoEl = preview.querySelector('.cover-preview-info');
+      if (infoEl) infoEl.textContent = 'Ready - ' + Math.round(blob.size / 1024) + 'KB';
       preview.classList.remove('hidden');
       btn.classList.add('hidden');
-      var kb = Math.round(blob.size / 1024);
-      preview.querySelector('.cover-preview-info').textContent = 'Ready · '+kb+'KB';
-    } catch(e) {
-      showStatus('Could not process image — try another photo.', 'error');
-    }
-    btn.textContent = '📷 Add cover photo';
-    btn.disabled = false;
-    this.value = '';
+      btn.textContent = origText;
+      btn.disabled = false;
+      self.value = '';
+    }).catch(function() {
+      showStatus('Could not process image.', 'error');
+      btn.textContent = origText;
+      btn.disabled = false;
+    });
   });
 
   removeBtn.addEventListener('click', function() {
@@ -397,65 +381,54 @@ function setupCoverUpload(prefix) {
   });
 }
 
-// ── Supabase API ──────────────────────────────────────────────
-async function sbFetch(path, options) {
-  var res = await fetch(SB_URL + path, Object.assign({ headers: HEADERS }, options||{}));
-  if (!res.ok) {
-    var err = await res.json().catch(function(){return {};});
-    throw new Error(err.message || err.error || 'Request failed ('+res.status+')');
-  }
-  return res.status === 204 ? {} : res.json();
-}
-
-async function sbGetAll() {
-  return sbFetch('/rest/v1/records?select=*&order=created_at.asc&limit=10000');
-}
-
-async function sbInsert(record) {
-  return sbFetch('/rest/v1/records', {
-    method: 'POST',
-    headers: Object.assign({}, HEADERS, { 'Prefer': 'return=representation' }),
-    body: JSON.stringify(record)
+// ── Supabase helpers ──────────────────────────────────────────
+function sbFetch(path, options) {
+  return fetch(SB_URL + path, Object.assign({ headers: HEADERS }, options || {})).then(function(res) {
+    if (!res.ok) {
+      return res.json().catch(function(){ return {}; }).then(function(err) {
+        throw new Error(err.message || err.error || 'Request failed (' + res.status + ')');
+      });
+    }
+    return res.status === 204 ? {} : res.json();
   });
 }
 
-async function sbDelete(id) {
-  return sbFetch('/rest/v1/records?id=eq.'+encodeURIComponent(id), { method: 'DELETE' });
-}
-
-async function uploadCover(blob, filename) {
-  // Upload to Supabase Storage
-  var uploadHeaders = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'image/jpeg', 'Cache-Control': '3600' };
-  var res = await fetch(SB_URL + '/storage/v1/object/covers/' + filename, {
+function uploadCover(blob, filename) {
+  return fetch(SB_URL + '/storage/v1/object/covers/' + filename, {
     method: 'POST',
-    headers: uploadHeaders,
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'image/jpeg', 'Cache-Control': '3600' },
     body: blob
+  }).then(function(res) {
+    if (!res.ok) {
+      return res.json().catch(function(){ return {}; }).then(function(err) {
+        throw new Error(err.error || 'Upload failed (' + res.status + ')');
+      });
+    }
+    return SB_URL + '/storage/v1/object/public/covers/' + filename;
   });
-  if (!res.ok) {
-    var err = await res.json().catch(function(){return {};});
-    throw new Error(err.error || 'Upload failed ('+res.status+')');
-  }
-  // Return the public URL
-  return SB_URL + '/storage/v1/object/public/covers/' + filename;
+}
+
+function getCoverUrl(blob) {
+  var filename = Date.now() + '-' + Math.random().toString(36).slice(2) + '.jpg';
+  return uploadCover(blob, filename);
 }
 
 // ── Init ──────────────────────────────────────────────────────
-async function init() {
-  setSyncStatus('busy', 'Connecting to Supabase…');
-  try {
-    var data = await sbGetAll();
+function init() {
+  setSyncStatus('busy', 'Connecting to Supabase...');
+  sbFetch('/rest/v1/records?select=*&order=created_at.asc&limit=10000').then(function(data) {
     records = data.map(function(r) {
-      return { id:r.id, artist:r.artist||'', title:r.title||'', country:r.country||'', edition:r.edition||'', notes:r.notes||'', cover_url:r.cover_url||'' };
+      return { id: r.id, artist: r.artist||'', title: r.title||'', country: r.country||'', edition: r.edition||'', notes: r.notes||'', cover_url: r.cover_url||'' };
     });
-    setSyncStatus('ok', 'Synced · '+records.length+' records');
+    setSyncStatus('ok', 'Synced - ' + records.length + ' records');
     renderAll();
-  } catch(e) {
-    setSyncStatus('err', 'Connection failed: '+e.message);
-    document.getElementById('records-list').innerHTML = '<div class="empty-state"><div class="big-disc"></div><p>Could not connect to Supabase.<br><small style="font-size:11px;color:var(--label-red)">'+esc(e.message)+'</small></p></div>';
-  }
+  }).catch(function(e) {
+    setSyncStatus('err', 'Connection failed: ' + e.message);
+    document.getElementById('records-list').innerHTML = '<div class="empty-state"><div class="big-disc"></div><p>Could not connect.<br><small style="font-size:11px;color:var(--label-red)">' + esc(e.message) + '</small></p></div>';
+  });
+
   setupCoverUpload('bc');
   setupCoverUpload('m');
-  setupCoverUpload('e');
   setupCoverUpload('e');
 }
 
@@ -464,24 +437,26 @@ function renderAll() { updateStats(); applySort(); }
 
 function updateStats() {
   document.getElementById('total-count').textContent = records.length;
-  var a={};records.forEach(function(r){a[r.artist.toLowerCase()]=1;});
+  var a = {}; records.forEach(function(r){ a[r.artist.toLowerCase()] = 1; });
   document.getElementById('artist-count').textContent = Object.keys(a).length;
-  var c={};records.filter(function(r){return r.country;}).forEach(function(r){c[r.country]=1;});
-  document.getElementById('country-count').textContent = Object.keys(c).length||'—';
+  var c = {}; records.filter(function(r){ return r.country; }).forEach(function(r){ c[r.country] = 1; });
+  document.getElementById('country-count').textContent = Object.keys(c).length || '--';
 }
 
 function applySort() {
   var q = document.getElementById('search-input').value.toLowerCase().trim();
   var list = q ? records.filter(function(r){
-    return r.artist.toLowerCase().indexOf(q)>=0 || r.title.toLowerCase().indexOf(q)>=0 || (r.notes&&r.notes.toLowerCase().indexOf(q)>=0);
+    return r.artist.toLowerCase().indexOf(q) >= 0
+        || r.title.toLowerCase().indexOf(q) >= 0
+        || (r.notes && r.notes.toLowerCase().indexOf(q) >= 0);
   }) : records.slice();
-  if (sortMode==='alpha') {
-    list.sort(function(a,b){ return a.artist.toLowerCase().localeCompare(b.artist.toLowerCase())||a.title.toLowerCase().localeCompare(b.title.toLowerCase()); });
+  if (sortMode === 'alpha') {
+    list.sort(function(a,b){ return a.artist.toLowerCase().localeCompare(b.artist.toLowerCase()) || a.title.toLowerCase().localeCompare(b.title.toLowerCase()); });
   } else {
     list.reverse();
   }
   filteredList = list;
-  document.getElementById('list-label').textContent = q ? 'Results ('+list.length+')' : 'Collection';
+  document.getElementById('list-label').textContent = q ? 'Results (' + list.length + ')' : 'Collection';
   currentPage = 1;
   renderPage();
 }
@@ -489,269 +464,223 @@ function applySort() {
 function renderPage() {
   var totalPages = Math.max(1, Math.ceil(filteredList.length / PAGE_SIZE));
   if (currentPage > totalPages) currentPage = totalPages;
-  var start = (currentPage-1)*PAGE_SIZE;
-  renderList(filteredList.slice(start, start+PAGE_SIZE), start);
+  var start = (currentPage - 1) * PAGE_SIZE;
+  renderList(filteredList.slice(start, start + PAGE_SIZE), start);
   renderPagination(totalPages);
 }
 
 function renderList(list, offset) {
-  offset = offset||0;
+  offset = offset || 0;
   var el = document.getElementById('records-list');
   if (!filteredList.length) {
     var q = document.getElementById('search-input').value;
-    el.innerHTML = '<div class="empty-state"><div class="big-disc"></div><p>'+(q?'No records match your search.':'Your catalogue is empty.<br>Add your first record above.')+'</p></div>';
+    el.innerHTML = '<div class="empty-state"><div class="big-disc"></div><p>' + (q ? 'No records match your search.' : 'Your catalogue is empty.<br>Add your first record above.') + '</p></div>';
     return;
   }
   var cls = ['c1','c2','c3','c4','c5'];
-  el.innerHTML = list.map(function(r,i){
-    var gi = offset+i;
+  el.innerHTML = list.map(function(r, i) {
+    var gi = offset + i;
     var thumb = r.cover_url
-      ? '<div class="record-thumb"><img src="'+esc(r.cover_url)+'" alt="" onerror="this.parentNode.innerHTML=\'<div class=&quot;disc-fallback '+cls[gi%5]+'&quot;></div>\'"></div>'
-      : '<div class="record-thumb"><div class="disc-fallback '+cls[gi%5]+'"></div></div>';
-    return '<div class="record-item">'+thumb+
-      '<div class="record-info">'+
-        '<div class="record-artist">'+esc(r.artist)+'</div>'+
-        '<div class="record-title">'+esc(r.title)+'</div>'+
-        (r.notes?'<div class="record-notes">'+esc(r.notes)+'</div>':'')+
-        ((r.country||r.edition)?'<div class="record-meta">'+(r.country?'<span class="tag">'+esc(r.country)+'</span>':'')+(r.edition?'<span class="tag">'+esc(r.edition)+'</span>':'')+'</div>':'')+'</div>'+
-      '<button class="edit-btn" data-id="'+r.id+'">✎</button><button class="delete-btn" data-id="'+r.id+'">✕</button></div>';
+      ? '<div class="record-thumb"><img src="' + esc(r.cover_url) + '" alt="" onerror="this.parentNode.innerHTML=\'<div class=&quot;disc-fallback ' + cls[gi%5] + '&quot;></div>\'"></div>'
+      : '<div class="record-thumb"><div class="disc-fallback ' + cls[gi%5] + '"></div></div>';
+    return '<div class="record-item" data-record-id="' + esc(String(r.id)) + '">' + thumb +
+      '<div class="record-info">' +
+        '<div class="record-artist">' + esc(r.artist) + '</div>' +
+        '<div class="record-title">' + esc(r.title) + '</div>' +
+        (r.notes ? '<div class="record-notes">' + esc(r.notes) + '</div>' : '') +
+        ((r.country || r.edition) ? '<div class="record-meta">' +
+          (r.country ? '<span class="tag">' + esc(r.country) + '</span>' : '') +
+          (r.edition ? '<span class="tag">' + esc(r.edition) + '</span>' : '') +
+        '</div>' : '') +
+      '</div>' +
+      '<div class="record-actions">' +
+        '<button class="edit-btn" data-action="edit" title="Edit this record">&#9998;</button>' +
+        '<button class="delete-btn" data-action="delete" title="Delete this record">&#10005;</button>' +
+      '</div>' +
+    '</div>';
   }).join('');
-  el.querySelectorAll('.delete-btn').forEach(function(b){ b.addEventListener('click',function(){deleteRecord(this.dataset.id);}); });
-  el.querySelectorAll('.edit-btn').forEach(function(b){ b.addEventListener('click',function(){openEdit(this.dataset.id);}); });
+
+  // Single delegated event listener on the container
+  el.addEventListener('click', function(e) {
+    var btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    var item = btn.closest('.record-item');
+    if (!item) return;
+    var id = item.dataset.recordId;
+    if (btn.dataset.action === 'edit') {
+      openEdit(id);
+    } else if (btn.dataset.action === 'delete') {
+      deleteRecord(id);
+    }
+  });
 }
 
 function renderPagination(totalPages) {
   var pg = document.getElementById('pagination');
-  if (totalPages<=1){pg.innerHTML='';return;}
-  var html='<div class="pagination">';
-  html+='<button class="page-btn" id="pg-prev"'+(currentPage===1?' disabled':'')+'>&lsaquo;</button>';
-  getPageRange(currentPage,totalPages).forEach(function(p){
-    html += p==='…'?'<span class="page-info">…</span>':'<button class="page-btn'+(p===currentPage?' active':'')+'" data-page="'+p+'">'+p+'</button>';
+  if (totalPages <= 1) { pg.innerHTML = ''; return; }
+  var html = '<div class="pagination">';
+  html += '<button class="page-btn" id="pg-prev"' + (currentPage === 1 ? ' disabled' : '') + '>&lsaquo;</button>';
+  getPageRange(currentPage, totalPages).forEach(function(p) {
+    html += p === '...' ? '<span class="page-info">...</span>' : '<button class="page-btn' + (p === currentPage ? ' active' : '') + '" data-page="' + p + '">' + p + '</button>';
   });
-  html+='<button class="page-btn" id="pg-next"'+(currentPage===totalPages?' disabled':'')+'>&rsaquo;</button></div>';
-  pg.innerHTML=html;
-  pg.querySelector('#pg-prev').addEventListener('click',function(){if(currentPage>1){currentPage--;renderPage();scrollToList();}});
-  pg.querySelector('#pg-next').addEventListener('click',function(){if(currentPage<totalPages){currentPage++;renderPage();scrollToList();}});
-  pg.querySelectorAll('.page-btn[data-page]').forEach(function(btn){ btn.addEventListener('click',function(){currentPage=parseInt(this.dataset.page);renderPage();scrollToList();}); });
+  html += '<button class="page-btn" id="pg-next"' + (currentPage === totalPages ? ' disabled' : '') + '>&rsaquo;</button></div>';
+  pg.innerHTML = html;
+  pg.querySelector('#pg-prev').addEventListener('click', function(){ if(currentPage>1){currentPage--;renderPage();scrollToList();} });
+  pg.querySelector('#pg-next').addEventListener('click', function(){ if(currentPage<totalPages){currentPage++;renderPage();scrollToList();} });
+  pg.querySelectorAll('.page-btn[data-page]').forEach(function(btn){
+    btn.addEventListener('click', function(){ currentPage = parseInt(this.dataset.page); renderPage(); scrollToList(); });
+  });
 }
-function getPageRange(current,total){if(total<=7){var r=[];for(var i=1;i<=total;i++)r.push(i);return r;}var result=[1];if(current>3)result.push('…');for(var p=Math.max(2,current-1);p<=Math.min(total-1,current+1);p++)result.push(p);if(current<total-2)result.push('…');result.push(total);return result;}
-function scrollToList(){ document.querySelector('.sort-bar').scrollIntoView({behavior:'smooth',block:'start'}); }
 
-// ── Search & Sort ─────────────────────────────────────────────
+function getPageRange(current, total) {
+  if (total <= 7) { var r=[]; for(var i=1;i<=total;i++) r.push(i); return r; }
+  var result = [1];
+  if (current > 3) result.push('...');
+  for (var p = Math.max(2,current-1); p <= Math.min(total-1,current+1); p++) result.push(p);
+  if (current < total-2) result.push('...');
+  result.push(total);
+  return result;
+}
+
+function scrollToList() {
+  document.querySelector('.sort-bar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Search & sort ─────────────────────────────────────────────
 document.getElementById('search-input').addEventListener('input', applySort);
-document.getElementById('sort-alpha').addEventListener('click',function(){ sortMode='alpha';this.classList.add('active');document.getElementById('sort-recent').classList.remove('active');applySort(); });
-document.getElementById('sort-recent').addEventListener('click',function(){ sortMode='recent';this.classList.add('active');document.getElementById('sort-alpha').classList.remove('active');applySort(); });
+document.getElementById('sort-alpha').addEventListener('click', function(){ sortMode='alpha'; this.classList.add('active'); document.getElementById('sort-recent').classList.remove('active'); applySort(); });
+document.getElementById('sort-recent').addEventListener('click', function(){ sortMode='recent'; this.classList.add('active'); document.getElementById('sort-alpha').classList.remove('active'); applySort(); });
 
-// ── Artist autocomplete ───────────────────────────────────────
+// ── Autocomplete ──────────────────────────────────────────────
 var acInput = document.getElementById('m-artist');
 var acDrop  = document.getElementById('artist-dropdown');
-function acMatches(q){var seen={},out=[];records.forEach(function(r){var k=r.artist.toLowerCase();if(r.artist&&!seen[k]&&k.indexOf(q.toLowerCase())===0){seen[k]=1;out.push(r.artist);}});return out.sort(function(a,b){return a.toLowerCase().localeCompare(b.toLowerCase());});}
-function acShow(m){if(!m.length){acHide();return;}acDrop.innerHTML=m.map(function(a){return'<div class="ac-item">'+esc(a)+'</div>';}).join('');acDrop.querySelectorAll('.ac-item').forEach(function(item){item.addEventListener('touchstart',function(e){e.stopPropagation();},{passive:true});item.addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();acSelect(this.textContent);});item.addEventListener('mousedown',function(e){e.preventDefault();acSelect(this.textContent);});});acDrop.classList.add('open');acOpen=true;}
-function acHide(){acDrop.classList.remove('open');acOpen=false;}
-function acSelect(v){acInput.value=v;acHide();document.getElementById('m-title').focus();}
-acInput.addEventListener('input',function(){var q=this.value.trim();if(!q){acHide();return;}acShow(acMatches(q));});
-acInput.addEventListener('focus',function(){var q=this.value.trim();if(q)acShow(acMatches(q));});
-acInput.addEventListener('blur',function(){setTimeout(acHide,300);});
-document.addEventListener('touchstart',function(e){if(!acDrop.contains(e.target)&&e.target!==acInput)acHide();},{passive:true});
-document.addEventListener('mousedown',function(e){if(!acDrop.contains(e.target)&&e.target!==acInput)acHide();});
-acInput.addEventListener('keydown',function(e){var items=acDrop.querySelectorAll('.ac-item'),active=acDrop.querySelector('.ac-item.highlighted'),idx=active?Array.prototype.indexOf.call(items,active):-1;if(e.key==='ArrowDown'){e.preventDefault();if(idx<items.length-1){if(active)active.classList.remove('highlighted');items[idx+1].classList.add('highlighted');}}else if(e.key==='ArrowUp'){e.preventDefault();if(idx>0){active.classList.remove('highlighted');items[idx-1].classList.add('highlighted');}}else if(e.key==='Enter'&&active){e.preventDefault();acSelect(active.textContent);}else if(e.key==='Escape'){acHide();}});
 
-// ── Add / Delete ──────────────────────────────────────────────
-async function addRecord(artist, title, country, edition, notes, coverBlob) {
-  if (saving) return false;
-  country=country||'';edition=edition||'';notes=notes||'';
-  var dup = records.filter(function(r){ return r.artist.toLowerCase()===artist.toLowerCase()&&r.title.toLowerCase()===title.toLowerCase(); })[0];
-  if (dup) { showStatus('Already in catalogue: '+artist+' — '+title,'error'); return false; }
-  saving=true; setSyncStatus('busy','Saving…');
-  try {
-    var cover_url = '';
-    if (coverBlob) {
-      setSyncStatus('busy', 'Uploading cover…');
-      var filename = Date.now() + '-' + Math.random().toString(36).slice(2) + '.jpg';
-      cover_url = await uploadCover(coverBlob, filename);
-    }
-    var result = await sbInsert({ artist:artist, title:title, country:country, edition:edition, notes:notes, cover_url:cover_url });
-    var newRec = result[0] || { id:Date.now()+'', artist:artist, title:title, country:country, edition:edition, notes:notes, cover_url:cover_url };
-    records.push({ id:newRec.id, artist:artist, title:title, country:country, edition:edition, notes:notes, cover_url:cover_url });
-    setSyncStatus('ok','Synced · '+records.length+' records');
-    renderAll(); saving=false; return true;
-  } catch(e) {
-    saving=false; setSyncStatus('err','Save failed: '+e.message); showStatus('Could not save: '+e.message,'error'); return false;
-  }
+function acMatches(q) {
+  var seen = {}, out = [];
+  records.forEach(function(r){ var k = r.artist.toLowerCase(); if(r.artist && !seen[k] && k.indexOf(q.toLowerCase())===0){ seen[k]=1; out.push(r.artist); } });
+  return out.sort(function(a,b){ return a.toLowerCase().localeCompare(b.toLowerCase()); });
 }
-
-async function deleteRecord(id) {
-  var idx=-1; records.forEach(function(r,i){if(String(r.id)===String(id))idx=i;});
-  if(idx===-1)return;
-  var rec=records[idx];
-  if(!confirm('Remove "'+rec.artist+' — '+rec.title+'"?'))return;
-  setSyncStatus('busy','Removing…');
-  try {
-    await sbDelete(id);
-    records.splice(idx,1);
-    setSyncStatus('ok','Synced · '+records.length+' records'); renderAll();
-  } catch(e) { setSyncStatus('err','Delete failed: '+e.message); showStatus('Could not remove — check connection.','error'); }
+function acShow(matches) {
+  if (!matches.length) { acHide(); return; }
+  acDrop.innerHTML = matches.map(function(a){ return '<div class="ac-item">' + esc(a) + '</div>'; }).join('');
+  acDrop.querySelectorAll('.ac-item').forEach(function(item) {
+    item.addEventListener('touchstart', function(e){ e.stopPropagation(); }, { passive: true });
+    item.addEventListener('touchend', function(e){ e.preventDefault(); e.stopPropagation(); acSelect(this.textContent); });
+    item.addEventListener('mousedown', function(e){ e.preventDefault(); acSelect(this.textContent); });
+  });
+  acDrop.classList.add('open'); acOpen = true;
 }
+function acHide() { acDrop.classList.remove('open'); acOpen = false; }
+function acSelect(val) { acInput.value = val; acHide(); document.getElementById('m-title').focus(); }
 
-// ── Reset cover UI ────────────────────────────────────────────
-function resetCoverUI(prefix) {
-  pendingCovers[prefix] = null;
-  document.getElementById(prefix+'-cover-img').src = '';
-  document.getElementById(prefix+'-cover-preview').classList.add('hidden');
-  document.getElementById(prefix+'-cover-btn').classList.remove('hidden');
-}
-
-// Show cover button once barcode form appears
-var bcFormObserver = new MutationObserver(function() {
-  var form = document.getElementById('barcode-form');
-  if (!form.classList.contains('hidden')) {
-    document.getElementById('bc-cover-btn').classList.remove('hidden');
-  }
-});
-bcFormObserver.observe(document.getElementById('barcode-form'), { attributes: true });
-
-// ── Manual save ───────────────────────────────────────────────
-document.getElementById('manual-save-btn').addEventListener('click', async function() {
-  var artist=document.getElementById('m-artist').value.trim();
-  var title=document.getElementById('m-title').value.trim();
-  var country=document.getElementById('m-country').value.trim();
-  var edition=document.getElementById('m-edition').value.trim();
-  var notes=document.getElementById('m-notes').value.trim();
-  if(!artist||!title){showStatus('Artist and title are required.','error');return;}
-  var ok=await addRecord(artist,title,country,edition,notes,pendingCovers.m);
-  if(ok){
-    showStatus('Added: '+artist+' — '+title,'success');
-    ['m-artist','m-title','m-country','m-edition','m-notes'].forEach(function(id){document.getElementById(id).value='';});
-    resetCoverUI('m'); acHide(); closePanel('manual-panel');
-  }
-});
-
-// ── Barcode save ──────────────────────────────────────────────
-document.getElementById('bc-save-btn').addEventListener('click', async function() {
-  if(!barcodeData||typeof barcodeData!=='object')return;
-  var country=document.getElementById('bc-country').value.trim();
-  var edition=document.getElementById('bc-edition').value.trim();
-  var notes=document.getElementById('bc-notes').value.trim();
-  // Use uploaded cover if present, otherwise fall back to Discogs URL
-  var coverToUse = pendingCovers.bc || null;
-  var ok;
-  if (coverToUse) {
-    ok = await addRecord(barcodeData.artist,barcodeData.title,country,edition,notes,coverToUse);
-  } else {
-    // Save with Discogs cover_url directly (no upload)
-    saving=true; setSyncStatus('busy','Saving…');
-    var dup = records.filter(function(r){return r.artist.toLowerCase()===barcodeData.artist.toLowerCase()&&r.title.toLowerCase()===barcodeData.title.toLowerCase();})[0];
-    if(dup){showStatus('Already in catalogue: '+barcodeData.artist+' — '+barcodeData.title,'error');saving=false;return;}
-    try{
-      var result = await sbInsert({artist:barcodeData.artist,title:barcodeData.title,country:country,edition:edition,notes:notes,cover_url:barcodeData.cover_url||''});
-      var nr = result[0]||{id:Date.now()+'',artist:barcodeData.artist,title:barcodeData.title,country:country,edition:edition,notes:notes,cover_url:barcodeData.cover_url||''};
-      records.push({id:nr.id,artist:nr.artist,title:nr.title,country:nr.country||'',edition:nr.edition||'',notes:nr.notes||'',cover_url:nr.cover_url||''});
-      setSyncStatus('ok','Synced · '+records.length+' records');
-      renderAll(); saving=false; ok=true;
-    }catch(e){saving=false;setSyncStatus('err','Save failed: '+e.message);showStatus('Could not save: '+e.message,'error');return;}
-  }
-  if(ok){
-    showStatus('Added: '+barcodeData.artist+' — '+barcodeData.title,'success');
-    ['bc-country','bc-edition','bc-notes','manual-barcode'].forEach(function(id){document.getElementById(id).value='';});
-    resetCoverUI('bc'); barcodeData=null; closePanel('barcode-panel');
-  }
+acInput.addEventListener('input', function(){ var q=this.value.trim(); if(!q){acHide();return;} acShow(acMatches(q)); });
+acInput.addEventListener('focus', function(){ var q=this.value.trim(); if(q) acShow(acMatches(q)); });
+acInput.addEventListener('blur', function(){ setTimeout(acHide, 300); });
+document.addEventListener('touchstart', function(e){ if(!acDrop.contains(e.target)&&e.target!==acInput) acHide(); }, { passive: true });
+document.addEventListener('mousedown', function(e){ if(!acDrop.contains(e.target)&&e.target!==acInput) acHide(); });
+acInput.addEventListener('keydown', function(e) {
+  var items = acDrop.querySelectorAll('.ac-item'), active = acDrop.querySelector('.ac-item.highlighted');
+  var idx = active ? Array.prototype.indexOf.call(items, active) : -1;
+  if(e.key==='ArrowDown'){e.preventDefault();if(idx<items.length-1){if(active)active.classList.remove('highlighted');items[idx+1].classList.add('highlighted');}}
+  else if(e.key==='ArrowUp'){e.preventDefault();if(idx>0){active.classList.remove('highlighted');items[idx-1].classList.add('highlighted');}}
+  else if(e.key==='Enter'&&active){e.preventDefault();acSelect(active.textContent);}
+  else if(e.key==='Escape'){acHide();}
 });
 
 // ── Panels ────────────────────────────────────────────────────
-function togglePanel(id){var panel=document.getElementById(id),isHidden=panel.classList.contains('hidden');['barcode-panel','manual-panel','edit-panel'].forEach(function(p){document.getElementById(p).classList.add('hidden');});if(isHidden){panel.classList.remove('hidden');if(id==='barcode-panel')startScanner();}else{if(id==='barcode-panel')stopScanner();}}
-function closePanel(id){document.getElementById(id).classList.add('hidden');if(id==='barcode-panel')stopScanner();}
-document.getElementById('btn-barcode').addEventListener('click',function(){togglePanel('barcode-panel');});
-document.getElementById('btn-manual').addEventListener('click',function(){togglePanel('manual-panel');});
-document.getElementById('close-barcode').addEventListener('click',function(){closePanel('barcode-panel');});
-document.getElementById('close-manual').addEventListener('click',function(){closePanel('manual-panel');});
-
-// ── Manual barcode lookup ─────────────────────────────────────
-document.getElementById('manual-barcode-btn').addEventListener('click',function(){var code=document.getElementById('manual-barcode').value.trim();if(!code){showStatus('Enter a barcode number first.','error');return;}stopScanner();lookupBarcode(code);});
-document.getElementById('manual-barcode').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('manual-barcode-btn').click();});
-
-// ── Scanner ───────────────────────────────────────────────────
-function startScanner(){
-  scanning=true;lastScanned=null;barcodeData=null;
-  document.getElementById('barcode-result').classList.add('hidden');
-  document.getElementById('barcode-form').classList.add('hidden');
-  document.getElementById('scanner-status').textContent='Requesting camera…';
-  try{
-    codeReader=new ZXing.BrowserMultiFormatReader();
-    codeReader.listVideoInputDevices().then(function(devices){
-      var deviceId;devices.forEach(function(d){var l=d.label.toLowerCase();if(l.indexOf('back')>=0||l.indexOf('rear')>=0||l.indexOf('environment')>=0)deviceId=d.deviceId;});
-      if(!deviceId&&devices.length>0)deviceId=devices[devices.length-1].deviceId;
-      navigator.mediaDevices.getUserMedia({video:{deviceId:deviceId?{exact:deviceId}:undefined,facingMode:deviceId?undefined:{ideal:'environment'},width:{ideal:1280},height:{ideal:720},advanced:[{focusMode:'continuous'}]}}).then(function(stream){
-        var video=document.getElementById('scanner-video');
-        video.srcObject=stream;
-        var track=stream.getVideoTracks()[0];
-        if(track&&track.applyConstraints)track.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(function(){});
-        video.play().then(function(){
-          document.getElementById('scanner-status').textContent='Point at the barcode…';
-          codeReader.decodeFromStream(stream,video,function(result){
-            if(!result||!scanning)return;
-            var code=result.getText();
-            if(code===lastScanned)return;
-            lastScanned=code;scanning=false;codeReader.reset();lookupBarcode(code);
-          });
-        });
-      }).catch(function(err){document.getElementById('scanner-status').textContent='Camera error: '+(err.message||'permission denied');scanning=false;});
-    }).catch(function(err){document.getElementById('scanner-status').textContent='Camera error: '+(err.message||'permission denied');scanning=false;});
-  }catch(err){document.getElementById('scanner-status').textContent='Scanner unavailable — enter barcode manually above.';scanning=false;}
+function closeAllPanels() {
+  ['barcode-panel','manual-panel','edit-panel'].forEach(function(p){ document.getElementById(p).classList.add('hidden'); });
+  stopScanner();
 }
-function stopScanner(){scanning=false;lastScanned=null;if(codeReader){try{codeReader.reset();}catch(e){}codeReader=null;}var v=document.getElementById('scanner-video');if(v&&v.srcObject){v.srcObject.getTracks().forEach(function(t){t.stop();});v.srcObject=null;}}
-
-async function lookupBarcode(code){
-  var s=document.getElementById('scanner-status');
-  s.innerHTML='<span class="spinner"></span> Looking up '+code+'…';
-  document.getElementById('barcode-result').classList.add('hidden');
-  document.getElementById('barcode-form').classList.add('hidden');
-  try{
-    var res=await fetch('https://api.discogs.com/database/search?barcode='+code,{headers:{'User-Agent':'VinylCatalogue/1.0'}});
-    var data=await res.json();
-    if(data.results&&data.results.length>0){
-      var top=data.results[0];
-      var parts=(top.title||'').split(' - ');
-      var artist=parts[0]||'',title=parts.slice(1).join(' - ')||top.title||'';
-      var cover=(top.cover_image&&top.cover_image.indexOf('spacer')===-1)?top.cover_image:'';
-      barcodeData={artist:artist,title:title,cover_url:cover};
-      var re=document.getElementById('barcode-result');
-      re.className='lookup-result';
-      re.innerHTML=(cover?'<img class="lookup-cover" src="'+esc(cover)+'" alt="" onerror="this.style.display=\'none\'">':'')+
-        '<div class="lookup-text"><strong>'+esc(artist)+' — '+esc(title)+'</strong><span>via Discogs · '+code+'</span>'+(cover?'':'<br><span style="font-size:11px;color:var(--label-red)">No cover found — you can add one below</span>')+'</div>';
-      re.classList.remove('hidden');
-      document.getElementById('barcode-form').classList.remove('hidden');
-      s.textContent='Found! Add optional details below.';
-    }else{
-      s.textContent='Barcode not found — try entering it manually or add the record manually.';
-    }
-  }catch(e){s.textContent='Lookup failed — check your connection.';}
+function openPanel(id) {
+  closeAllPanels();
+  document.getElementById(id).classList.remove('hidden');
+  if (id === 'barcode-panel') startScanner();
+}
+function closePanel(id) {
+  document.getElementById(id).classList.add('hidden');
+  if (id === 'barcode-panel') stopScanner();
 }
 
-
-// ── Edit record ────────────────────────────────────────────────
-var editingId = null;
-
+document.getElementById('btn-barcode').addEventListener('click', function(){
+  if (document.getElementById('barcode-panel').classList.contains('hidden')) openPanel('barcode-panel');
+  else closePanel('barcode-panel');
+});
+document.getElementById('btn-manual').addEventListener('click', function(){
+  if (document.getElementById('manual-panel').classList.contains('hidden')) openPanel('manual-panel');
+  else closePanel('manual-panel');
+});
+document.getElementById('close-barcode').addEventListener('click', function(){ closePanel('barcode-panel'); });
+document.getElementById('close-manual').addEventListener('click', function(){ closePanel('manual-panel'); });
 document.getElementById('close-edit').addEventListener('click', function(){ closePanel('edit-panel'); });
 
+// ── Add record ────────────────────────────────────────────────
+function addRecord(artist, title, country, edition, notes, coverBlob, existingCoverUrl) {
+  if (saving) return Promise.resolve(false);
+  country = country||''; edition = edition||''; notes = notes||'';
+  var dup = records.filter(function(r){ return r.artist.toLowerCase()===artist.toLowerCase()&&r.title.toLowerCase()===title.toLowerCase(); })[0];
+  if (dup) { showStatus('Already in catalogue: '+artist+' -- '+title, 'error'); return Promise.resolve(false); }
+  saving = true; setSyncStatus('busy', 'Saving...');
+
+  var coverPromise = coverBlob ? getCoverUrl(coverBlob) : Promise.resolve(existingCoverUrl || '');
+  return coverPromise.then(function(cover_url) {
+    return sbFetch('/rest/v1/records', {
+      method: 'POST',
+      headers: Object.assign({}, HEADERS, { 'Prefer': 'return=representation' }),
+      body: JSON.stringify({ artist:artist, title:title, country:country, edition:edition, notes:notes, cover_url:cover_url })
+    }).then(function(result) {
+      var nr = result[0] || { id: Date.now()+'', artist:artist, title:title, country:country, edition:edition, notes:notes, cover_url:cover_url };
+      records.push({ id:nr.id, artist:artist, title:title, country:country, edition:edition, notes:notes, cover_url:cover_url });
+      setSyncStatus('ok', 'Synced - '+records.length+' records');
+      renderAll(); saving = false; return true;
+    });
+  }).catch(function(e) {
+    saving = false; setSyncStatus('err', 'Save failed: '+e.message); showStatus('Could not save: '+e.message, 'error'); return false;
+  });
+}
+
+// ── Delete record ─────────────────────────────────────────────
+function deleteRecord(id) {
+  var idx = -1;
+  records.forEach(function(r,i){ if(String(r.id)===String(id)) idx=i; });
+  if (idx === -1) return;
+  var rec = records[idx];
+  if (!confirm('Remove "'+rec.artist+' -- '+rec.title+'"?')) return;
+  setSyncStatus('busy', 'Removing...');
+  sbFetch('/rest/v1/records?id=eq.'+encodeURIComponent(id), { method: 'DELETE' }).then(function() {
+    records.splice(idx, 1);
+    setSyncStatus('ok', 'Synced - '+records.length+' records'); renderAll();
+  }).catch(function(e) {
+    setSyncStatus('err', 'Delete failed: '+e.message); showStatus('Could not remove.', 'error');
+  });
+}
+
+// ── Open edit panel ───────────────────────────────────────────
 function openEdit(id) {
-  var rec = records.filter(function(r){ return String(r.id) === String(id); })[0];
-  if (!rec) return;
-  editingId = id;
+  var rec = null;
+  for (var i = 0; i < records.length; i++) {
+    if (String(records[i].id) === String(id)) { rec = records[i]; break; }
+  }
+  if (!rec) { showStatus('Record not found.', 'error'); return; }
+
+  editingId = String(id);
+  document.getElementById('e-id').value      = editingId;
   document.getElementById('e-artist').value  = rec.artist;
   document.getElementById('e-title').value   = rec.title;
-  document.getElementById('e-country').value = rec.country||'';
-  document.getElementById('e-edition').value = rec.edition||'';
-  document.getElementById('e-notes').value   = rec.notes||'';
-  // Show existing cover if present
+  document.getElementById('e-country').value = rec.country || '';
+  document.getElementById('e-edition').value = rec.edition || '';
+  document.getElementById('e-notes').value   = rec.notes || '';
+
+  pendingCovers.e = null;
   var preview = document.getElementById('e-cover-preview');
   var img     = document.getElementById('e-cover-img');
   var btn     = document.getElementById('e-cover-btn');
-  pendingCovers.e = null;
+  var info    = document.getElementById('e-cover-info');
+
   if (rec.cover_url) {
     img.src = rec.cover_url;
+    if (info) info.textContent = 'Current cover';
     preview.classList.remove('hidden');
-    preview.querySelector('.cover-preview-info').textContent = 'Current cover';
-    btn.textContent = '📷 Change cover photo';
     btn.classList.add('hidden');
   } else {
     img.src = '';
@@ -759,56 +688,174 @@ function openEdit(id) {
     btn.textContent = '📷 Add cover photo';
     btn.classList.remove('hidden');
   }
-  ['barcode-panel','manual-panel'].forEach(function(p){ document.getElementById(p).classList.add('hidden'); });
-  document.getElementById('edit-panel').classList.remove('hidden');
+
+  openPanel('edit-panel');
 }
 
-document.getElementById('edit-save-btn').addEventListener('click', async function() {
-  if (!editingId) return;
+// ── Save edit ─────────────────────────────────────────────────
+document.getElementById('edit-save-btn').addEventListener('click', function() {
+  var id      = editingId;
   var artist  = document.getElementById('e-artist').value.trim();
   var title   = document.getElementById('e-title').value.trim();
   var country = document.getElementById('e-country').value.trim();
   var edition = document.getElementById('e-edition').value.trim();
   var notes   = document.getElementById('e-notes').value.trim();
   if (!artist || !title) { showStatus('Artist and title are required.', 'error'); return; }
-  setSyncStatus('busy', 'Saving changes…');
-  try {
-    var cover_url = records.filter(function(r){ return String(r.id)===String(editingId); })[0].cover_url || '';
-    if (pendingCovers.e) {
-      setSyncStatus('busy', 'Uploading cover…');
-      var filename = Date.now() + '-' + Math.random().toString(36).slice(2) + '.jpg';
-      cover_url = await uploadCover(pendingCovers.e, filename);
-    }
-    var updateData = { artist:artist, title:title, country:country, edition:edition, notes:notes, cover_url:cover_url };
-    await sbFetch('/rest/v1/records?id=eq.'+encodeURIComponent(editingId), {
+
+  var rec = null;
+  for (var i = 0; i < records.length; i++) {
+    if (String(records[i].id) === String(id)) { rec = records[i]; break; }
+  }
+  if (!rec) { showStatus('Record not found.', 'error'); return; }
+
+  setSyncStatus('busy', 'Saving changes...');
+
+  var preview   = document.getElementById('e-cover-preview');
+  var coverBlob = pendingCovers.e;
+  var existingUrl = preview.classList.contains('hidden') ? '' : (rec.cover_url || '');
+
+  var coverPromise = coverBlob ? getCoverUrl(coverBlob) : Promise.resolve(existingUrl);
+
+  coverPromise.then(function(cover_url) {
+    return sbFetch('/rest/v1/records?id=eq.' + encodeURIComponent(id), {
       method: 'PATCH',
       headers: Object.assign({}, HEADERS, { 'Prefer': 'return=minimal' }),
-      body: JSON.stringify(updateData)
+      body: JSON.stringify({ artist:artist, title:title, country:country, edition:edition, notes:notes, cover_url:cover_url })
+    }).then(function() {
+      rec.artist=artist; rec.title=title; rec.country=country; rec.edition=edition; rec.notes=notes; rec.cover_url=cover_url;
+      pendingCovers.e = null;
+      editingId = null;
+      setSyncStatus('ok', 'Synced - '+records.length+' records');
+      showStatus('Updated: '+artist+' -- '+title, 'success');
+      closePanel('edit-panel');
+      renderAll();
     });
-    // Update local record
-    records.forEach(function(r) {
-      if (String(r.id) === String(editingId)) {
-        r.artist=artist; r.title=title; r.country=country; r.edition=edition; r.notes=notes; r.cover_url=cover_url;
-      }
-    });
-    setSyncStatus('ok', 'Synced · '+records.length+' records');
-    showStatus('Updated: '+artist+' — '+title, 'success');
-    pendingCovers.e = null;
-    editingId = null;
-    closePanel('edit-panel');
-    renderAll();
-  } catch(e) {
+  }).catch(function(e) {
     setSyncStatus('err', 'Update failed: '+e.message);
     showStatus('Could not save changes: '+e.message, 'error');
-  }
+  });
 });
 
+// ── Manual save ───────────────────────────────────────────────
+document.getElementById('manual-save-btn').addEventListener('click', function() {
+  var artist  = document.getElementById('m-artist').value.trim();
+  var title   = document.getElementById('m-title').value.trim();
+  var country = document.getElementById('m-country').value.trim();
+  var edition = document.getElementById('m-edition').value.trim();
+  var notes   = document.getElementById('m-notes').value.trim();
+  if (!artist||!title) { showStatus('Artist and title are required.', 'error'); return; }
+  addRecord(artist, title, country, edition, notes, pendingCovers.m, '').then(function(ok) {
+    if (ok) {
+      showStatus('Added: '+artist+' -- '+title, 'success');
+      ['m-artist','m-title','m-country','m-edition','m-notes'].forEach(function(id){ document.getElementById(id).value=''; });
+      pendingCovers.m = null;
+      document.getElementById('m-cover-preview').classList.add('hidden');
+      document.getElementById('m-cover-btn').classList.remove('hidden');
+      acHide(); closePanel('manual-panel');
+    }
+  });
+});
+
+// ── Barcode save ──────────────────────────────────────────────
+document.getElementById('bc-save-btn').addEventListener('click', function() {
+  if (!barcodeData || typeof barcodeData !== 'object') return;
+  var country = document.getElementById('bc-country').value.trim();
+  var edition = document.getElementById('bc-edition').value.trim();
+  var notes   = document.getElementById('bc-notes').value.trim();
+  addRecord(barcodeData.artist, barcodeData.title, country, edition, notes, pendingCovers.bc, barcodeData.cover_url||'').then(function(ok) {
+    if (ok) {
+      showStatus('Added: '+barcodeData.artist+' -- '+barcodeData.title, 'success');
+      ['bc-country','bc-edition','bc-notes','manual-barcode'].forEach(function(id){ document.getElementById(id).value=''; });
+      pendingCovers.bc = null;
+      document.getElementById('bc-cover-preview').classList.add('hidden');
+      document.getElementById('bc-cover-btn').classList.remove('hidden');
+      barcodeData = null; closePanel('barcode-panel');
+    }
+  });
+});
+
+// ── Manual barcode lookup ─────────────────────────────────────
+document.getElementById('manual-barcode-btn').addEventListener('click', function(){
+  var code = document.getElementById('manual-barcode').value.trim();
+  if (!code) { showStatus('Enter a barcode number first.', 'error'); return; }
+  stopScanner(); lookupBarcode(code);
+});
+document.getElementById('manual-barcode').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') document.getElementById('manual-barcode-btn').click();
+});
+
+// ── Scanner ───────────────────────────────────────────────────
+function startScanner() {
+  scanning = true; lastScanned = null; barcodeData = null;
+  document.getElementById('barcode-result').classList.add('hidden');
+  document.getElementById('barcode-form').classList.add('hidden');
+  document.getElementById('scanner-status').textContent = 'Requesting camera...';
+  try {
+    codeReader = new ZXing.BrowserMultiFormatReader();
+    codeReader.listVideoInputDevices().then(function(devices) {
+      var deviceId;
+      devices.forEach(function(d){ var l=d.label.toLowerCase(); if(l.indexOf('back')>=0||l.indexOf('rear')>=0||l.indexOf('environment')>=0) deviceId=d.deviceId; });
+      if (!deviceId && devices.length > 0) deviceId = devices[devices.length-1].deviceId;
+      navigator.mediaDevices.getUserMedia({ video:{ deviceId:deviceId?{exact:deviceId}:undefined, facingMode:deviceId?undefined:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720}, advanced:[{focusMode:'continuous'}] } }).then(function(stream) {
+        var video = document.getElementById('scanner-video');
+        video.srcObject = stream;
+        var track = stream.getVideoTracks()[0];
+        if (track && track.applyConstraints) track.applyConstraints({ advanced:[{focusMode:'continuous'}] }).catch(function(){});
+        video.play().then(function() {
+          document.getElementById('scanner-status').textContent = 'Point at the barcode...';
+          codeReader.decodeFromStream(stream, video, function(result) {
+            if (!result || !scanning) return;
+            var code = result.getText();
+            if (code === lastScanned) return;
+            lastScanned = code; scanning = false; codeReader.reset(); lookupBarcode(code);
+          });
+        });
+      }).catch(function(err){ document.getElementById('scanner-status').textContent = 'Camera error: '+(err.message||'permission denied'); scanning=false; });
+    }).catch(function(err){ document.getElementById('scanner-status').textContent = 'Camera error: '+(err.message||'permission denied'); scanning=false; });
+  } catch(err) { document.getElementById('scanner-status').textContent = 'Scanner unavailable - enter barcode manually above.'; scanning=false; }
+}
+
+function stopScanner() {
+  scanning = false; lastScanned = null;
+  if (codeReader) { try{ codeReader.reset(); }catch(e){} codeReader = null; }
+  var v = document.getElementById('scanner-video');
+  if (v && v.srcObject) { v.srcObject.getTracks().forEach(function(t){ t.stop(); }); v.srcObject = null; }
+}
+
+function lookupBarcode(code) {
+  var s = document.getElementById('scanner-status');
+  s.innerHTML = '<span class="spinner"></span> Looking up ' + code + '...';
+  document.getElementById('barcode-result').classList.add('hidden');
+  document.getElementById('barcode-form').classList.add('hidden');
+  fetch('https://api.discogs.com/database/search?barcode=' + code, { headers: {'User-Agent':'VinylCatalogue/1.0'} }).then(function(res){ return res.json(); }).then(function(data) {
+    if (data.results && data.results.length > 0) {
+      var top = data.results[0];
+      var parts = (top.title||'').split(' - ');
+      var artist = parts[0]||'', title = parts.slice(1).join(' - ')||top.title||'';
+      var cover = (top.cover_image && top.cover_image.indexOf('spacer')===-1) ? top.cover_image : '';
+      barcodeData = { artist:artist, title:title, cover_url:cover };
+      var re = document.getElementById('barcode-result');
+      re.className = 'lookup-result';
+      re.innerHTML = (cover ? '<img class="lookup-cover" src="'+esc(cover)+'" alt="" onerror="this.style.display=\'none\'">' : '') +
+        '<div class="lookup-text"><strong>'+esc(artist)+' -- '+esc(title)+'</strong><span>via Discogs - '+code+'</span>' +
+        (!cover ? '<br><span style="font-size:11px;color:var(--label-red)">No cover found - add one below</span>' : '') + '</div>';
+      re.classList.remove('hidden');
+      document.getElementById('barcode-form').classList.remove('hidden');
+      s.textContent = 'Found! Add optional details below.';
+    } else {
+      s.textContent = 'Barcode not found - try entering manually.';
+    }
+  }).catch(function(){ s.textContent = 'Lookup failed - check your connection.'; });
+}
+
 // ── Export CSV ────────────────────────────────────────────────
-document.getElementById('export-btn').addEventListener('click',function(){
-  if(!records.length){showStatus('Nothing to export yet.','error');return;}
-  var rows=[['Artist','Title','Country','Edition','Notes']].concat(records.map(function(r){return[r.artist,r.title,r.country||'',r.edition||'',r.notes||''];}));
-  var csv=rows.map(function(r){return r.map(function(c){return'"'+c.replace(/"/g,'""')+'"';}).join(',');}).join('\n');
-  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='vinyl_catalogue.csv';a.click();
+document.getElementById('export-btn').addEventListener('click', function() {
+  if (!records.length) { showStatus('Nothing to export yet.', 'error'); return; }
+  var rows = [['Artist','Title','Country','Edition','Notes']].concat(records.map(function(r){ return [r.artist,r.title,r.country||'',r.edition||'',r.notes||'']; }));
+  var csv = rows.map(function(r){ return r.map(function(c){ return '"'+c.replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'vinyl_catalogue.csv'; a.click();
 });
 
 init();
