@@ -116,8 +116,7 @@
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(26,18,8,0.1); border-top-color: var(--ink); border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-screen { padding: 3rem 1.5rem; text-align: center; color: var(--muted); font-size: 13px; }
-  .import-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; color: var(--muted); }
-  .import-btn:hover { background: var(--warm); color: var(--ink); }
+
 </style>
 </head>
 <body>
@@ -203,7 +202,7 @@
       <span class="sort-bar-label" id="list-label">Collection</span>
       <button class="sort-btn active" id="sort-alpha">A–Z</button>
       <button class="sort-btn" id="sort-recent">Recent</button>
-      <button class="import-btn" id="import-btn" title="Import from Google Sheets">Import</button>
+
       <button class="export-btn" id="export-btn">Export CSV</button>
     </div>
     <div class="panel" style="overflow:hidden">
@@ -222,8 +221,7 @@ const SB_URL = 'https://rakigamlbzjgupqavpdq.supabase.co';
 const SB_KEY = 'sb_publishable_nCQzN8Ffcqb9-tLdPaNlVw_2dKGIEDk';
 const HEADERS = { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
 
-// Google Sheets Apps Script URL for import
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzWakCy6WRWol9XiwxOe8aEAM_8LoaSxjIGa01upau9alkT2kAE-MPWPhfAHEFKttqf/exec';
+
 
 const PAGE_SIZE = 20;
 
@@ -453,40 +451,7 @@ document.getElementById('bc-save-btn').addEventListener('click', async function(
   if(ok){ showStatus('Added: '+barcodeData.artist+' — '+barcodeData.title,'success'); ['bc-country','bc-edition','bc-notes','manual-barcode'].forEach(function(id){document.getElementById(id).value='';}); barcodeData=null;closePanel('barcode-panel'); }
 });
 
-// ── Google Sheets import ──────────────────────────────────────
-document.getElementById('import-btn').addEventListener('click', async function() {
-  if (!confirm('Import records from your Google Sheet? Duplicates will be skipped.')) return;
-  setSyncStatus('busy', 'Importing from Google Sheets…');
-  try {
-    var res = await fetch(SHEET_URL);
-    var data = await res.json();
-    var rows = data.values||[];
-    var hasHeader = rows.length>0&&rows[0][0]&&rows[0][0].toLowerCase()==='artist';
-    var dataRows = hasHeader?rows.slice(1):rows;
-    var toInsert = [];
-    dataRows.forEach(function(r){
-      var artist=r[0]||'',title=r[1]||'';
-      if(!artist&&!title)return;
-      var dup=records.filter(function(ex){return ex.artist.toLowerCase()===artist.toLowerCase()&&ex.title.toLowerCase()===title.toLowerCase();})[0];
-      if(!dup) toInsert.push({artist:artist,title:title,country:r[2]||'',edition:r[3]||'',notes:r[4]||'',cover_url:''});
-    });
-    if(!toInsert.length){showStatus('Nothing new to import — all records already exist.','info');setSyncStatus('ok','Synced · '+records.length+' records');return;}
-    // Insert in batches of 50
-    var imported=0;
-    for(var i=0;i<toInsert.length;i+=50){
-      var batch=toInsert.slice(i,i+50);
-      var result=await sbFetch('/rest/v1/records',{method:'POST',headers:Object.assign({},HEADERS,{'Prefer':'return=representation'}),body:JSON.stringify(batch)});
-      result.forEach(function(r){ records.push({id:r.id,artist:r.artist,title:r.title,country:r.country||'',edition:r.edition||'',notes:r.notes||'',cover_url:r.cover_url||''}); });
-      imported+=batch.length;
-    }
-    setSyncStatus('ok','Synced · '+records.length+' records');
-    showStatus('Imported '+imported+' record'+(imported!==1?'s':'')+' from Google Sheets.','success');
-    renderAll();
-  } catch(e) {
-    setSyncStatus('err','Import failed: '+e.message);
-    showStatus('Import failed: '+e.message,'error');
-  }
-});
+
 
 // ── Panels ────────────────────────────────────────────────────
 function togglePanel(id){ var panel=document.getElementById(id),isHidden=panel.classList.contains('hidden'); ['barcode-panel','manual-panel'].forEach(function(p){document.getElementById(p).classList.add('hidden');}); if(isHidden){panel.classList.remove('hidden');if(id==='barcode-panel')startScanner();}else{if(id==='barcode-panel')stopScanner();} }
