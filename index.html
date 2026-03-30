@@ -89,6 +89,14 @@
   .sort-btn.active { background: var(--groove); color: var(--cream); border-color: var(--groove); }
   .export-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; color: var(--muted); }
   .export-btn:hover { background: var(--warm); color: var(--ink); }
+  .cover-file-input { display: none; }
+  .cover-upload-btn { display: flex; align-items: center; gap: 8px; padding: 0.625rem 0.875rem; font-family: "DM Mono", monospace; font-size: 12px; background: var(--cream); border: 1px dashed rgba(26,18,8,0.3); border-radius: 6px; cursor: pointer; color: var(--muted); width: 100%; justify-content: center; transition: all 0.15s; }
+  .cover-upload-btn:hover { background: var(--warm); border-color: rgba(26,18,8,0.5); color: var(--ink); }
+  .cover-preview { display: flex; align-items: center; gap: 12px; padding: 0.625rem; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; }
+  .cover-preview img { width: 52px; height: 52px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
+  .cover-preview-info { flex: 1; font-size: 11px; color: var(--muted); }
+  .cover-remove-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; padding: 4px; flex-shrink: 0; }
+  .cover-remove-btn:hover { color: var(--label-red); }
   .record-item { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--border); transition: background 0.1s; }
   .record-item:last-child { border-bottom: none; }
   .record-item:hover { background: #faf8f3; }
