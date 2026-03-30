@@ -858,6 +858,20 @@ document.getElementById('export-btn').addEventListener('click', function() {
   a.download = 'vinyl_catalogue.csv'; a.click();
 });
 
+// Single permanent delegated listener for record actions
+document.getElementById('records-list').addEventListener('click', function(e) {
+  var btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  var item = btn.closest('.record-item');
+  if (!item) return;
+  var id = item.getAttribute('data-record-id');
+  if (btn.getAttribute('data-action') === 'edit') {
+    openEdit(id);
+  } else if (btn.getAttribute('data-action') === 'delete') {
+    deleteRecord(id);
+  }
+});
+
 init();
 </script>
 </body>
