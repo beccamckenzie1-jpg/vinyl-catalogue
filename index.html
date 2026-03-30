@@ -72,6 +72,17 @@
   .scanner-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--label-red); animation: scan 2s ease-in-out infinite; }
   @keyframes scan { 0%,100%{top:8%} 50%{top:88%} }
   .scanner-status { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 0.75rem; min-height: 20px; }
+
+  /* Cover upload */
+  .cover-file-input { display: none; }
+  .cover-upload-btn { display: flex; align-items: center; gap: 8px; padding: 0.625rem 0.875rem; font-family: 'DM Mono', monospace; font-size: 12px; background: var(--cream); border: 1px dashed rgba(26,18,8,0.3); border-radius: 6px; cursor: pointer; color: var(--muted); width: 100%; justify-content: center; transition: all 0.15s; }
+  .cover-upload-btn:hover { background: var(--warm); border-color: rgba(26,18,8,0.5); color: var(--ink); }
+  .cover-preview { display: flex; align-items: center; gap: 12px; padding: 0.625rem; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; }
+  .cover-preview img { width: 52px; height: 52px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
+  .cover-preview-info { flex: 1; font-size: 11px; color: var(--muted); }
+  .cover-remove-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; padding: 4px; flex-shrink: 0; }
+  .cover-remove-btn:hover { color: var(--label-red); }
+
   .sort-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; flex-wrap: wrap; }
   .sort-bar-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); flex: 1; }
   .sort-btn { font-family: 'DM Mono', monospace; font-size: 10px; padding: 3px 9px; border-radius: 5px; border: 1px solid var(--border); background: none; cursor: pointer; color: var(--muted); }
@@ -116,7 +127,6 @@
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(26,18,8,0.1); border-top-color: var(--ink); border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-screen { padding: 3rem 1.5rem; text-align: center; color: var(--muted); font-size: 13px; }
-
 </style>
 </head>
 <body>
@@ -169,6 +179,16 @@
           <div class="form-group"><label>Edition (optional)</label><input type="text" id="bc-edition" placeholder="e.g. Original, Repress"></div>
         </div>
         <div class="form-group"><label>Notes (optional)</label><textarea id="bc-notes" placeholder="e.g. Tatsuro Yamashita, coloured vinyl…"></textarea></div>
+        <div class="form-group">
+          <label>Cover image (optional)</label>
+          <input type="file" class="cover-file-input" id="bc-cover-input" accept="image/*">
+          <div class="cover-preview hidden" id="bc-cover-preview">
+            <img id="bc-cover-img" src="" alt="">
+            <div class="cover-preview-info">Cover ready to upload</div>
+            <button class="cover-remove-btn" id="bc-cover-remove">×</button>
+          </div>
+          <button class="cover-upload-btn hidden" id="bc-cover-btn">📷 Add cover photo</button>
+        </div>
         <button class="submit-btn" id="bc-save-btn">Add to catalogue</button>
       </div>
     </div>
@@ -191,6 +211,16 @@
         <div class="form-group"><label>Edition (optional)</label><input type="text" id="m-edition" placeholder="e.g. Original"></div>
       </div>
       <div class="form-group"><label>Notes (optional)</label><textarea id="m-notes" placeholder="e.g. Tatsuro Yamashita, romanji, promo copy…"></textarea></div>
+      <div class="form-group">
+        <label>Cover image (optional)</label>
+        <input type="file" class="cover-file-input" id="m-cover-input" accept="image/*">
+        <div class="cover-preview hidden" id="m-cover-preview">
+          <img id="m-cover-img" src="" alt="">
+          <div class="cover-preview-info">Cover ready to upload</div>
+          <button class="cover-remove-btn" id="m-cover-remove">×</button>
+        </div>
+        <button class="cover-upload-btn" id="m-cover-btn">📷 Add cover photo</button>
+      </div>
       <button class="submit-btn" id="manual-save-btn">Add to catalogue</button>
     </div>
   </div>
@@ -202,7 +232,6 @@
       <span class="sort-bar-label" id="list-label">Collection</span>
       <button class="sort-btn active" id="sort-alpha">A–Z</button>
       <button class="sort-btn" id="sort-recent">Recent</button>
-
       <button class="export-btn" id="export-btn">Export CSV</button>
     </div>
     <div class="panel" style="overflow:hidden">
@@ -216,14 +245,12 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
 <script>
-// ── Supabase config ───────────────────────────────────────────
-const SB_URL = 'https://rakigamlbzjgupqavpdq.supabase.co';
-const SB_KEY = 'sb_publishable_nCQzN8Ffcqb9-tLdPaNlVw_2dKGIEDk';
-const HEADERS = { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
-
-
-
+const SB_URL   = 'https://rakigamlbzjgupqavpdq.supabase.co';
+const SB_KEY   = 'sb_publishable_nCQzN8Ffcqb9-tLdPaNlVw_2dKGIEDk';
+const HEADERS  = { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
 const PAGE_SIZE = 20;
+const MAX_DIM   = 600;  // max px dimension for cover images
+const MAX_BYTES = 80000; // target ~80KB
 
 var records      = [];
 var barcodeData  = null;
@@ -235,6 +262,9 @@ var sortMode     = 'alpha';
 var currentPage  = 1;
 var filteredList = [];
 var acOpen       = false;
+
+// Pending cover blobs: { bc: Blob|null, m: Blob|null }
+var pendingCovers = { bc: null, m: null };
 
 // ── Helpers ───────────────────────────────────────────────────
 function setSyncStatus(state, msg) {
@@ -248,6 +278,84 @@ function showStatus(msg, type) {
   setTimeout(function(){ el.innerHTML=''; }, 4000);
 }
 
+// ── Image compression ─────────────────────────────────────────
+function compressImage(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var img = new Image();
+      img.onload = function() {
+        var w = img.width, h = img.height;
+        // Scale down to MAX_DIM
+        if (w > MAX_DIM || h > MAX_DIM) {
+          if (w > h) { h = Math.round(h * MAX_DIM / w); w = MAX_DIM; }
+          else       { w = Math.round(w * MAX_DIM / h); h = MAX_DIM; }
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        // Try quality 0.8 first, step down if still too large
+        var quality = 0.82;
+        var tryCompress = function() {
+          canvas.toBlob(function(blob) {
+            if (blob && blob.size > MAX_BYTES && quality > 0.3) {
+              quality -= 0.1;
+              tryCompress();
+            } else {
+              resolve(blob);
+            }
+          }, 'image/jpeg', quality);
+        };
+        tryCompress();
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ── Cover upload UI ───────────────────────────────────────────
+function setupCoverUpload(prefix) {
+  var fileInput = document.getElementById(prefix+'-cover-input');
+  var btn       = document.getElementById(prefix+'-cover-btn');
+  var preview   = document.getElementById(prefix+'-cover-preview');
+  var img       = document.getElementById(prefix+'-cover-img');
+  var removeBtn = document.getElementById(prefix+'-cover-remove');
+
+  btn.addEventListener('click', function() { fileInput.click(); });
+
+  fileInput.addEventListener('change', async function() {
+    var file = this.files[0];
+    if (!file) return;
+    btn.textContent = '⏳ Compressing…';
+    btn.disabled = true;
+    try {
+      var blob = await compressImage(file);
+      pendingCovers[prefix] = blob;
+      var url = URL.createObjectURL(blob);
+      img.src = url;
+      preview.classList.remove('hidden');
+      btn.classList.add('hidden');
+      var kb = Math.round(blob.size / 1024);
+      preview.querySelector('.cover-preview-info').textContent = 'Ready · '+kb+'KB';
+    } catch(e) {
+      showStatus('Could not process image — try another photo.', 'error');
+    }
+    btn.textContent = '📷 Add cover photo';
+    btn.disabled = false;
+    this.value = '';
+  });
+
+  removeBtn.addEventListener('click', function() {
+    pendingCovers[prefix] = null;
+    img.src = '';
+    preview.classList.add('hidden');
+    btn.classList.remove('hidden');
+  });
+}
+
 // ── Supabase API ──────────────────────────────────────────────
 async function sbFetch(path, options) {
   var res = await fetch(SB_URL + path, Object.assign({ headers: HEADERS }, options||{}));
@@ -259,9 +367,7 @@ async function sbFetch(path, options) {
 }
 
 async function sbGetAll() {
-  // Fetch all records - Supabase default limit is 1000, use range for larger collections
-  var data = await sbFetch('/rest/v1/records?select=*&order=created_at.asc&limit=10000');
-  return data;
+  return sbFetch('/rest/v1/records?select=*&order=created_at.asc&limit=10000');
 }
 
 async function sbInsert(record) {
@@ -274,6 +380,22 @@ async function sbInsert(record) {
 
 async function sbDelete(id) {
   return sbFetch('/rest/v1/records?id=eq.'+encodeURIComponent(id), { method: 'DELETE' });
+}
+
+async function uploadCover(blob, filename) {
+  // Upload to Supabase Storage
+  var uploadHeaders = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'image/jpeg', 'Cache-Control': '3600' };
+  var res = await fetch(SB_URL + '/storage/v1/object/covers/' + filename, {
+    method: 'POST',
+    headers: uploadHeaders,
+    body: blob
+  });
+  if (!res.ok) {
+    var err = await res.json().catch(function(){return {};});
+    throw new Error(err.error || 'Upload failed ('+res.status+')');
+  }
+  // Return the public URL
+  return SB_URL + '/storage/v1/object/public/covers/' + filename;
 }
 
 // ── Init ──────────────────────────────────────────────────────
@@ -290,6 +412,8 @@ async function init() {
     setSyncStatus('err', 'Connection failed: '+e.message);
     document.getElementById('records-list').innerHTML = '<div class="empty-state"><div class="big-disc"></div><p>Could not connect to Supabase.<br><small style="font-size:11px;color:var(--label-red)">'+esc(e.message)+'</small></p></div>';
   }
+  setupCoverUpload('bc');
+  setupCoverUpload('m');
 }
 
 // ── Render ────────────────────────────────────────────────────
@@ -311,7 +435,6 @@ function applySort() {
   if (sortMode==='alpha') {
     list.sort(function(a,b){ return a.artist.toLowerCase().localeCompare(b.artist.toLowerCase())||a.title.toLowerCase().localeCompare(b.title.toLowerCase()); });
   } else {
-    // recent = reverse insertion order
     list.reverse();
   }
   filteredList = list;
@@ -359,7 +482,7 @@ function renderPagination(totalPages) {
   var html='<div class="pagination">';
   html+='<button class="page-btn" id="pg-prev"'+(currentPage===1?' disabled':'')+'>&lsaquo;</button>';
   getPageRange(currentPage,totalPages).forEach(function(p){
-    html += p==='…' ? '<span class="page-info">…</span>' : '<button class="page-btn'+(p===currentPage?' active':'')+'" data-page="'+p+'">'+p+'</button>';
+    html += p==='…'?'<span class="page-info">…</span>':'<button class="page-btn'+(p===currentPage?' active':'')+'" data-page="'+p+'">'+p+'</button>';
   });
   html+='<button class="page-btn" id="pg-next"'+(currentPage===totalPages?' disabled':'')+'>&rsaquo;</button></div>';
   pg.innerHTML=html;
@@ -367,16 +490,7 @@ function renderPagination(totalPages) {
   pg.querySelector('#pg-next').addEventListener('click',function(){if(currentPage<totalPages){currentPage++;renderPage();scrollToList();}});
   pg.querySelectorAll('.page-btn[data-page]').forEach(function(btn){ btn.addEventListener('click',function(){currentPage=parseInt(this.dataset.page);renderPage();scrollToList();}); });
 }
-
-function getPageRange(current, total) {
-  if (total<=7){var r=[];for(var i=1;i<=total;i++)r.push(i);return r;}
-  var result=[1];
-  if(current>3)result.push('…');
-  for(var p=Math.max(2,current-1);p<=Math.min(total-1,current+1);p++)result.push(p);
-  if(current<total-2)result.push('…');
-  result.push(total);
-  return result;
-}
+function getPageRange(current,total){if(total<=7){var r=[];for(var i=1;i<=total;i++)r.push(i);return r;}var result=[1];if(current>3)result.push('…');for(var p=Math.max(2,current-1);p<=Math.min(total-1,current+1);p++)result.push(p);if(current<total-2)result.push('…');result.push(total);return result;}
 function scrollToList(){ document.querySelector('.sort-bar').scrollIntoView({behavior:'smooth',block:'start'}); }
 
 // ── Search & Sort ─────────────────────────────────────────────
@@ -387,25 +501,31 @@ document.getElementById('sort-recent').addEventListener('click',function(){ sort
 // ── Artist autocomplete ───────────────────────────────────────
 var acInput = document.getElementById('m-artist');
 var acDrop  = document.getElementById('artist-dropdown');
-function acMatches(q){ var seen={},out=[];records.forEach(function(r){var k=r.artist.toLowerCase();if(r.artist&&!seen[k]&&k.indexOf(q.toLowerCase())===0){seen[k]=1;out.push(r.artist);}});return out.sort(function(a,b){return a.toLowerCase().localeCompare(b.toLowerCase());}); }
-function acShow(m){ if(!m.length){acHide();return;} acDrop.innerHTML=m.map(function(a){return '<div class="ac-item">'+esc(a)+'</div>';}).join(''); acDrop.querySelectorAll('.ac-item').forEach(function(item){ item.addEventListener('touchstart',function(e){e.stopPropagation();},{passive:true}); item.addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();acSelect(this.textContent);}); item.addEventListener('mousedown',function(e){e.preventDefault();acSelect(this.textContent);}); }); acDrop.classList.add('open');acOpen=true; }
-function acHide(){ acDrop.classList.remove('open');acOpen=false; }
-function acSelect(v){ acInput.value=v;acHide();document.getElementById('m-title').focus(); }
+function acMatches(q){var seen={},out=[];records.forEach(function(r){var k=r.artist.toLowerCase();if(r.artist&&!seen[k]&&k.indexOf(q.toLowerCase())===0){seen[k]=1;out.push(r.artist);}});return out.sort(function(a,b){return a.toLowerCase().localeCompare(b.toLowerCase());});}
+function acShow(m){if(!m.length){acHide();return;}acDrop.innerHTML=m.map(function(a){return'<div class="ac-item">'+esc(a)+'</div>';}).join('');acDrop.querySelectorAll('.ac-item').forEach(function(item){item.addEventListener('touchstart',function(e){e.stopPropagation();},{passive:true});item.addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();acSelect(this.textContent);});item.addEventListener('mousedown',function(e){e.preventDefault();acSelect(this.textContent);});});acDrop.classList.add('open');acOpen=true;}
+function acHide(){acDrop.classList.remove('open');acOpen=false;}
+function acSelect(v){acInput.value=v;acHide();document.getElementById('m-title').focus();}
 acInput.addEventListener('input',function(){var q=this.value.trim();if(!q){acHide();return;}acShow(acMatches(q));});
 acInput.addEventListener('focus',function(){var q=this.value.trim();if(q)acShow(acMatches(q));});
 acInput.addEventListener('blur',function(){setTimeout(acHide,300);});
 document.addEventListener('touchstart',function(e){if(!acDrop.contains(e.target)&&e.target!==acInput)acHide();},{passive:true});
 document.addEventListener('mousedown',function(e){if(!acDrop.contains(e.target)&&e.target!==acInput)acHide();});
-acInput.addEventListener('keydown',function(e){ var items=acDrop.querySelectorAll('.ac-item'),active=acDrop.querySelector('.ac-item.highlighted'),idx=active?Array.prototype.indexOf.call(items,active):-1; if(e.key==='ArrowDown'){e.preventDefault();if(idx<items.length-1){if(active)active.classList.remove('highlighted');items[idx+1].classList.add('highlighted');}} else if(e.key==='ArrowUp'){e.preventDefault();if(idx>0){active.classList.remove('highlighted');items[idx-1].classList.add('highlighted');}} else if(e.key==='Enter'&&active){e.preventDefault();acSelect(active.textContent);} else if(e.key==='Escape'){acHide();} });
+acInput.addEventListener('keydown',function(e){var items=acDrop.querySelectorAll('.ac-item'),active=acDrop.querySelector('.ac-item.highlighted'),idx=active?Array.prototype.indexOf.call(items,active):-1;if(e.key==='ArrowDown'){e.preventDefault();if(idx<items.length-1){if(active)active.classList.remove('highlighted');items[idx+1].classList.add('highlighted');}}else if(e.key==='ArrowUp'){e.preventDefault();if(idx>0){active.classList.remove('highlighted');items[idx-1].classList.add('highlighted');}}else if(e.key==='Enter'&&active){e.preventDefault();acSelect(active.textContent);}else if(e.key==='Escape'){acHide();}});
 
 // ── Add / Delete ──────────────────────────────────────────────
-async function addRecord(artist, title, country, edition, notes, cover_url) {
+async function addRecord(artist, title, country, edition, notes, coverBlob) {
   if (saving) return false;
-  country=country||'';edition=edition||'';notes=notes||'';cover_url=cover_url||'';
+  country=country||'';edition=edition||'';notes=notes||'';
   var dup = records.filter(function(r){ return r.artist.toLowerCase()===artist.toLowerCase()&&r.title.toLowerCase()===title.toLowerCase(); })[0];
   if (dup) { showStatus('Already in catalogue: '+artist+' — '+title,'error'); return false; }
   saving=true; setSyncStatus('busy','Saving…');
   try {
+    var cover_url = '';
+    if (coverBlob) {
+      setSyncStatus('busy', 'Uploading cover…');
+      var filename = Date.now() + '-' + Math.random().toString(36).slice(2) + '.jpg';
+      cover_url = await uploadCover(coverBlob, filename);
+    }
     var result = await sbInsert({ artist:artist, title:title, country:country, edition:edition, notes:notes, cover_url:cover_url });
     var newRec = result[0] || { id:Date.now()+'', artist:artist, title:title, country:country, edition:edition, notes:notes, cover_url:cover_url };
     records.push({ id:newRec.id, artist:artist, title:title, country:country, edition:edition, notes:notes, cover_url:cover_url });
@@ -429,6 +549,23 @@ async function deleteRecord(id) {
   } catch(e) { setSyncStatus('err','Delete failed: '+e.message); showStatus('Could not remove — check connection.','error'); }
 }
 
+// ── Reset cover UI ────────────────────────────────────────────
+function resetCoverUI(prefix) {
+  pendingCovers[prefix] = null;
+  document.getElementById(prefix+'-cover-img').src = '';
+  document.getElementById(prefix+'-cover-preview').classList.add('hidden');
+  document.getElementById(prefix+'-cover-btn').classList.remove('hidden');
+}
+
+// Show cover button once barcode form appears
+var bcFormObserver = new MutationObserver(function() {
+  var form = document.getElementById('barcode-form');
+  if (!form.classList.contains('hidden')) {
+    document.getElementById('bc-cover-btn').classList.remove('hidden');
+  }
+});
+bcFormObserver.observe(document.getElementById('barcode-form'), { attributes: true });
+
 // ── Manual save ───────────────────────────────────────────────
 document.getElementById('manual-save-btn').addEventListener('click', async function() {
   var artist=document.getElementById('m-artist').value.trim();
@@ -437,8 +574,12 @@ document.getElementById('manual-save-btn').addEventListener('click', async funct
   var edition=document.getElementById('m-edition').value.trim();
   var notes=document.getElementById('m-notes').value.trim();
   if(!artist||!title){showStatus('Artist and title are required.','error');return;}
-  var ok=await addRecord(artist,title,country,edition,notes,'');
-  if(ok){ showStatus('Added: '+artist+' — '+title,'success'); ['m-artist','m-title','m-country','m-edition','m-notes'].forEach(function(id){document.getElementById(id).value='';}); acHide();closePanel('manual-panel'); }
+  var ok=await addRecord(artist,title,country,edition,notes,pendingCovers.m);
+  if(ok){
+    showStatus('Added: '+artist+' — '+title,'success');
+    ['m-artist','m-title','m-country','m-edition','m-notes'].forEach(function(id){document.getElementById(id).value='';});
+    resetCoverUI('m'); acHide(); closePanel('manual-panel');
+  }
 });
 
 // ── Barcode save ──────────────────────────────────────────────
@@ -447,22 +588,41 @@ document.getElementById('bc-save-btn').addEventListener('click', async function(
   var country=document.getElementById('bc-country').value.trim();
   var edition=document.getElementById('bc-edition').value.trim();
   var notes=document.getElementById('bc-notes').value.trim();
-  var ok=await addRecord(barcodeData.artist,barcodeData.title,country,edition,notes,barcodeData.cover_url||'');
-  if(ok){ showStatus('Added: '+barcodeData.artist+' — '+barcodeData.title,'success'); ['bc-country','bc-edition','bc-notes','manual-barcode'].forEach(function(id){document.getElementById(id).value='';}); barcodeData=null;closePanel('barcode-panel'); }
+  // Use uploaded cover if present, otherwise fall back to Discogs URL
+  var coverToUse = pendingCovers.bc || null;
+  var ok;
+  if (coverToUse) {
+    ok = await addRecord(barcodeData.artist,barcodeData.title,country,edition,notes,coverToUse);
+  } else {
+    // Save with Discogs cover_url directly (no upload)
+    saving=true; setSyncStatus('busy','Saving…');
+    var dup = records.filter(function(r){return r.artist.toLowerCase()===barcodeData.artist.toLowerCase()&&r.title.toLowerCase()===barcodeData.title.toLowerCase();})[0];
+    if(dup){showStatus('Already in catalogue: '+barcodeData.artist+' — '+barcodeData.title,'error');saving=false;return;}
+    try{
+      var result = await sbInsert({artist:barcodeData.artist,title:barcodeData.title,country:country,edition:edition,notes:notes,cover_url:barcodeData.cover_url||''});
+      var nr = result[0]||{id:Date.now()+'',artist:barcodeData.artist,title:barcodeData.title,country:country,edition:edition,notes:notes,cover_url:barcodeData.cover_url||''};
+      records.push({id:nr.id,artist:nr.artist,title:nr.title,country:nr.country||'',edition:nr.edition||'',notes:nr.notes||'',cover_url:nr.cover_url||''});
+      setSyncStatus('ok','Synced · '+records.length+' records');
+      renderAll(); saving=false; ok=true;
+    }catch(e){saving=false;setSyncStatus('err','Save failed: '+e.message);showStatus('Could not save: '+e.message,'error');return;}
+  }
+  if(ok){
+    showStatus('Added: '+barcodeData.artist+' — '+barcodeData.title,'success');
+    ['bc-country','bc-edition','bc-notes','manual-barcode'].forEach(function(id){document.getElementById(id).value='';});
+    resetCoverUI('bc'); barcodeData=null; closePanel('barcode-panel');
+  }
 });
 
-
-
 // ── Panels ────────────────────────────────────────────────────
-function togglePanel(id){ var panel=document.getElementById(id),isHidden=panel.classList.contains('hidden'); ['barcode-panel','manual-panel'].forEach(function(p){document.getElementById(p).classList.add('hidden');}); if(isHidden){panel.classList.remove('hidden');if(id==='barcode-panel')startScanner();}else{if(id==='barcode-panel')stopScanner();} }
-function closePanel(id){ document.getElementById(id).classList.add('hidden');if(id==='barcode-panel')stopScanner(); }
+function togglePanel(id){var panel=document.getElementById(id),isHidden=panel.classList.contains('hidden');['barcode-panel','manual-panel'].forEach(function(p){document.getElementById(p).classList.add('hidden');});if(isHidden){panel.classList.remove('hidden');if(id==='barcode-panel')startScanner();}else{if(id==='barcode-panel')stopScanner();}}
+function closePanel(id){document.getElementById(id).classList.add('hidden');if(id==='barcode-panel')stopScanner();}
 document.getElementById('btn-barcode').addEventListener('click',function(){togglePanel('barcode-panel');});
 document.getElementById('btn-manual').addEventListener('click',function(){togglePanel('manual-panel');});
 document.getElementById('close-barcode').addEventListener('click',function(){closePanel('barcode-panel');});
 document.getElementById('close-manual').addEventListener('click',function(){closePanel('manual-panel');});
 
 // ── Manual barcode lookup ─────────────────────────────────────
-document.getElementById('manual-barcode-btn').addEventListener('click',function(){ var code=document.getElementById('manual-barcode').value.trim(); if(!code){showStatus('Enter a barcode number first.','error');return;} stopScanner();lookupBarcode(code); });
+document.getElementById('manual-barcode-btn').addEventListener('click',function(){var code=document.getElementById('manual-barcode').value.trim();if(!code){showStatus('Enter a barcode number first.','error');return;}stopScanner();lookupBarcode(code);});
 document.getElementById('manual-barcode').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('manual-barcode-btn').click();});
 
 // ── Scanner ───────────────────────────────────────────────────
@@ -474,7 +634,7 @@ function startScanner(){
   try{
     codeReader=new ZXing.BrowserMultiFormatReader();
     codeReader.listVideoInputDevices().then(function(devices){
-      var deviceId; devices.forEach(function(d){var l=d.label.toLowerCase();if(l.indexOf('back')>=0||l.indexOf('rear')>=0||l.indexOf('environment')>=0)deviceId=d.deviceId;});
+      var deviceId;devices.forEach(function(d){var l=d.label.toLowerCase();if(l.indexOf('back')>=0||l.indexOf('rear')>=0||l.indexOf('environment')>=0)deviceId=d.deviceId;});
       if(!deviceId&&devices.length>0)deviceId=devices[devices.length-1].deviceId;
       navigator.mediaDevices.getUserMedia({video:{deviceId:deviceId?{exact:deviceId}:undefined,facingMode:deviceId?undefined:{ideal:'environment'},width:{ideal:1280},height:{ideal:720},advanced:[{focusMode:'continuous'}]}}).then(function(stream){
         var video=document.getElementById('scanner-video');
@@ -494,8 +654,7 @@ function startScanner(){
     }).catch(function(err){document.getElementById('scanner-status').textContent='Camera error: '+(err.message||'permission denied');scanning=false;});
   }catch(err){document.getElementById('scanner-status').textContent='Scanner unavailable — enter barcode manually above.';scanning=false;}
 }
-
-function stopScanner(){ scanning=false;lastScanned=null; if(codeReader){try{codeReader.reset();}catch(e){}codeReader=null;} var v=document.getElementById('scanner-video'); if(v&&v.srcObject){v.srcObject.getTracks().forEach(function(t){t.stop();});v.srcObject=null;} }
+function stopScanner(){scanning=false;lastScanned=null;if(codeReader){try{codeReader.reset();}catch(e){}codeReader=null;}var v=document.getElementById('scanner-video');if(v&&v.srcObject){v.srcObject.getTracks().forEach(function(t){t.stop();});v.srcObject=null;}}
 
 async function lookupBarcode(code){
   var s=document.getElementById('scanner-status');
@@ -514,14 +673,14 @@ async function lookupBarcode(code){
       var re=document.getElementById('barcode-result');
       re.className='lookup-result';
       re.innerHTML=(cover?'<img class="lookup-cover" src="'+esc(cover)+'" alt="" onerror="this.style.display=\'none\'">':'')+
-        '<div class="lookup-text"><strong>'+esc(artist)+' — '+esc(title)+'</strong><span>via Discogs · '+code+'</span></div>';
+        '<div class="lookup-text"><strong>'+esc(artist)+' — '+esc(title)+'</strong><span>via Discogs · '+code+'</span>'+(cover?'':'<br><span style="font-size:11px;color:var(--label-red)">No cover found — you can add one below</span>')+'</div>';
       re.classList.remove('hidden');
       document.getElementById('barcode-form').classList.remove('hidden');
       s.textContent='Found! Add optional details below.';
     }else{
       s.textContent='Barcode not found — try entering it manually or add the record manually.';
     }
-  }catch(e){ s.textContent='Lookup failed — check your connection.'; }
+  }catch(e){s.textContent='Lookup failed — check your connection.';}
 }
 
 // ── Export CSV ────────────────────────────────────────────────
